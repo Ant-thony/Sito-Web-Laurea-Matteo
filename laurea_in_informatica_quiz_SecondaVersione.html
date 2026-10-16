@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GradOS v2.0 (Buggy Build) - Laurea in Informatica 🎓🐛</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Monospace stile Hacker/Terminale -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-green: #00ff66;
+            --neon-cyan: #00e5ff;
+            --neon-amber: #ffb700;
+            --neon-red: #ff3366;
+            --bg-dark: #07090e;
+            --card-bg: #0f141c;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            /* Previene lo zoom automatico al doppio tap su mobile */
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(0, 255, 102, 0.08) 0%, transparent 60%),
+                linear-gradient(rgba(0, 255, 102, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 102, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 24px 24px, 24px 24px;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* Card Stile Cyber/Terminale */
+        .cyber-card {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(0, 255, 102, 0.35);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 255, 102, 0.08);
+            transition: all 0.25s ease;
+        }
+
+        .cyber-card-active:active {
+            transform: scale(0.98);
+        }
+
+        .neon-text {
+            color: var(--neon-green);
+            text-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
+        }
+
+        /* Stile elementi "Buggati" prima del fix */
+        .buggy-glitch {
+            border: 1px dashed #ff3366 !important;
+            background-color: rgba(255, 51, 102, 0.08);
+            position: relative;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 51, 102, 0.5); }
+            50% { box-shadow: 0 0 12px 2px rgba(255, 51, 102, 0.75); }
+        }
+        .overheat-pulse {
+            animation: pulse-red 1.2s infinite;
+        }
+
+        @keyframes fixed-flash {
+            0% { transform: scale(1.06); box-shadow: 0 0 25px #00ff66; }
+            100% { transform: scale(1); }
+        }
+        .fixed-anim {
+            animation: fixed-flash 0.5s ease-out;
+        }
+
+        /* Bottoni */
+        .btn-cyber {
+            background-color: rgba(0, 255, 102, 0.12);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            transition: all 0.15s ease;
+        }
+        .btn-cyber:hover, .btn-cyber:active {
+            background-color: var(--neon-green);
+            color: #05070a;
+            font-weight: 700;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+        }
+
+        .btn-primary-solid {
+            background: linear-gradient(135deg, #00ff66 0%, #00b894 100%);
+            color: #05070a;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 255, 102, 0.35);
+            transition: all 0.15s ease;
+        }
+        .btn-primary-solid:active {
+            transform: scale(0.96);
+        }
+
+        /* Memory Card Flip 3D */
+        .memory-card {
+            perspective: 1000px;
+            height: 82px;
+        }
+        .memory-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .memory-card.flipped .memory-inner,
+        .memory-card.matched .memory-inner {
+            transform: rotateY(180deg);
+        }
+        .memory-front, .memory-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .memory-front {
+            background-color: #131b26;
+            border: 1px solid rgba(0, 255, 102, 0.4);
+            color: var(--neon-green);
+        }
+        .memory-back {
+            background-color: #162a22;
+            border: 2px solid var(--neon-green);
+            transform: rotateY(180deg);
+            box-shadow: 0 0 12px rgba(0, 255, 102, 0.3);
+        }
+        .memory-card.matched .memory-back {
+            background-color: rgba(16, 185, 129, 0.25);
+            border-color: #10b981;
+        }
+
+        /* Canvas coriandoli */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+
+        /* Scrollbar terminale */
+        .terminal-output::-webkit-scrollbar {
+            width: 4px;
+        }
+        .terminal-output::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 102, 0.4);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between pb-8">
+
+    <!-- Canvas per i Coriandoli -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- ======================================================================= -->
+    <!-- BARRA DI STATO SUPERIORE (HUD: CFU, BUG FIXATI, SEGRETI, CPU)           -->
+    <!-- ======================================================================= -->
+    <header class="sticky top-0 z-40 bg-[#07090e]/95 backdrop-blur-md border-b border-green-500/30 px-3 py-2.5">
+        <div class="max-w-lg mx-auto">
+            <div class="flex flex-wrap items-center justify-between gap-1.5 text-[11px] mb-2">
+                <!-- Nome OS / Torna alla Home -->
+                <button onclick="showView('hub-view')" class="flex items-center gap-1 font-bold text-green-400 hover:text-green-300 active:scale-95 transition">
+                    <span>🎓</span>
+                    <span>GradOS v2.0</span>
+                </button>
+
+                <div class="flex items-center gap-1.5">
+                    <!-- Contatore Bug Fixati (Cliccabile per Checklist/Indizi QA) -->
+                    <button onclick="openBugModal()" class="flex items-center gap-1 bg-slate-900 border border-rose-500/50 text-rose-300 px-2 py-1 rounded-full font-bold active:scale-95 transition" title="Apri lista Bug Bounty">
+                        <span>🐛 Bug:</span>
+                        <span id="bugs-counter">0/7</span>
+                    </button>
+
+                    <!-- Contatore Segreti / Easter Egg (Cliccabile) -->
+                    <button onclick="openSecretsModal()" class="flex items-center gap-1 bg-slate-900 border border-amber-400/50 text-amber-300 px-2 py-1 rounded-full font-bold active:scale-95 transition" title="Apri Easter Egg">
+                        <span>🏆 Segreti:</span>
+                        <span id="secrets-counter">0/3</span>
+                    </button>
+
+                    <!-- BUG #3: Temperatura CPU a 98°C (Doppio Tap/Click per riparare!) -->
+                    <div id="hud-cpu-bug" class="flex items-center gap-1 bg-red-950/90 border border-red-500 text-red-300 px-2 py-1 rounded-full font-bold cursor-pointer overheat-pulse transition" title="Doppio Tap/Click per applicare pasta termica!">
+                        <span>🌡️ CPU:</span>
+                        <span id="cpu-temp-display">98°C ⚠️</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra di Progresso CFU (0 / 180 CFU) -->
+            <div class="w-full bg-slate-900 rounded-full h-4 border border-green-500/30 p-0.5 relative overflow-hidden">
+                <div id="cfu-progress-bar" class="bg-gradient-to-r from-green-500 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold tracking-wider text-white drop-shadow">
+                    🎓 CFU: <span id="cfu-counter" class="ml-1">0 / 180</span>
+                    <span class="mx-1.5 opacity-50">|</span>
+                    <span id="qa-status-inline" class="text-rose-300">QA: 7 Bug Rilevati!</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ======================================================================= -->
+    <!-- CONTENITORE PRINCIPALE DELLE VISTE                                      -->
+    <!-- ======================================================================= -->
+    <main class="max-w-lg w-full mx-auto px-4 pt-4 flex-grow">
+
+        <!-- =================================================================== -->
+        <!-- VISTA 1: HUB PRINCIPALE (CON I 7 BUG INTEGRATI E I 3 MINIGIOCHI)    -->
+        <!-- =================================================================== -->
+        <section id="hub-view" class="space-y-4 block relative">
+
+            <!-- Avviso Caccia al Bug (QA Briefing) -->
+            <div class="bg-rose-950/30 border border-rose-500/40 rounded-xl p-3 flex items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-xl">🕵️‍♂️</span>
+                    <div class="leading-tight">
+                        <span class="font-bold text-rose-300">Modalità QA Bug Bounty Attiva!</span>
+                        <p class="text-[11px] text-slate-300 mt-0.5">
+                            Lo stagista ha fatto deploy alle 3 di notte: fai <b>Doppio Tap (mobile)</b> o <b>Doppio Click (PC)</b> sui <b>7 elementi buggati</b> per ripararli, oppure guadagna <b>180 CFU</b> coi minigiochi!
+                        </p>
+                    </div>
+                </div>
+                <button onclick="openBugModal()" class="shrink-0 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-400/50 text-rose-200 text-[10px] font-bold px-2.5 py-1.5 rounded-lg">
+                    Indizi 🐛
+                </button>
+            </div>
+
+            <!-- =============================================================== -->
+            <!-- HERO CARD CANDIDATO (Contiene BUG #1, BUG #2, BUG #6, BUG #7)   -->
+            <!-- =============================================================== -->
+            <div class="cyber-card rounded-2xl p-4 relative overflow-visible">
+
+                <!-- BUG #7: Badge Storto Fluttuante z-index: 9999 (Doppio Tap per rimuovere) -->
+                <div id="bug-7-floating" class="absolute -top-3 -right-2 z-30 bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-lg border-2 border-yellow-300 cursor-pointer transform -rotate-6 hover:scale-105 transition">
+                    ⚠️ ERRORE 404: Vita Sociale non trovata<br>
+                    <span class="text-[9px] font-normal text-yellow-200">/* z-index:9999 - Doppio Tap per fixare */</span>
+                </div>
+
+                <div class="flex items-start justify-between gap-3 pt-2">
+                    <div class="flex-grow">
+                        <span class="inline-block text-[10px] uppercase tracking-widest bg-green-500/20 text-green-400 border border-green-500/40 px-2 py-0.5 rounded mb-1.5">
+                            Candidato Ufficiale
+                        </span>
+
+                        <!-- BUG #1: Nome Laureando con undefined NaN (Doppio Tap per fixare) -->
+                        <div id="bug-1-name" class="buggy-glitch rounded-xl p-2 cursor-pointer transition" title="Doppio Tap/Click per riparare la variabile del nome!">
+                            <div class="text-[9px] text-rose-400 font-mono">/* BUG #1: String Interpolation (Doppio Tap) */</div>
+                            <h1 id="candidate-name-text" class="text-base sm:text-lg font-bold text-rose-300 leading-tight break-words">
+                                Dott. undefined NaN [object Object]
+                            </h1>
+                        </div>
+
+                        <p id="candidate-course" class="text-xs text-slate-400 mt-1.5">
+                            Laurea Triennale in Informatica
+                        </p>
+                    </div>
+
+                    <!-- BUG #2: Avatar Capovolto 180deg (Doppio Tap per raddrizzare) -->
+                    <div id="bug-2-avatar" class="buggy-glitch rounded-xl p-2.5 text-center cursor-pointer shrink-0 flex flex-col items-center justify-center" title="Doppio Tap/Click per raddrizzare l'avatar!">
+                        <div id="avatar-emoji" class="text-4xl transform rotate-180 transition-transform duration-500">
+                            👨‍💻
+                        </div>
+                        <span id="avatar-bug-label" class="text-[8px] text-rose-300 font-mono mt-1 block">
+                            rotate(180deg)
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Statistiche Rapide: Contiene BUG #3 (Hardware Monitor + Overclock) e BUG #4 (Caffè Overflow) -->
+                <div class="grid grid-cols-2 gap-2.5 mt-3.5 pt-3 border-t border-slate-800">
+                    
+                    <!-- BUG #4: Contatore Caffè in Integer Overflow (Doppio Tap per fixare) -->
+                    <div id="bug-4-coffee" class="buggy-glitch rounded-xl p-2.5 cursor-pointer transition" title="Doppio Tap/Click per riparare l'Integer Overflow!">
+                        <div class="flex items-center justify-between text-[10px] text-slate-400">
+                            <span>☕ Caffè Bevuti:</span>
+                            <span id="coffee-bug-tag" class="text-[9px] text-rose-400 font-bold">INT32_ERR</span>
+                        </div>
+                        <div id="coffee-counter-val" class="text-xs sm:text-sm font-bold text-rose-300 mt-0.5 font-mono">
+                            -2147483648
+                        </div>
+                        <div id="coffee-hint-sub" class="text-[9px] text-slate-500">Doppio Tap per fixare</div>
+                    </div>
+
+                    <!-- Pannello Hardware CPU (Collegato a BUG #3 + Easter Egg #2 Overclock Boost) -->
+                    <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2.5 flex flex-col justify-between">
+                        <div id="bug-3-cpu-card" class="cursor-pointer" title="Doppio Tap/Click per applicare la pasta termica!">
+                            <div class="flex items-center justify-between text-[10px] text-slate-400">
+                                <span>🌡️ Temp. Server:</span>
+                                <span id="cpu-card-status" class="text-[9px] text-rose-400 font-bold">ALLARME!</span>
+                            </div>
+                            <div id="cpu-card-val" class="text-xs sm:text-sm font-bold text-rose-400 mt-0.5">
+                                98°C (No Pasta)
+                            </div>
+                        </div>
+                        <!-- EASTER EGG #2: Mini-Switch Overclock Segreto -->
+                        <div class="mt-1.5 pt-1 border-t border-slate-800 flex items-center justify-between">
+                            <span class="text-[9px] text-cyan-300">⚡ Boost 105°C:</span>
+                            <button onclick="triggerOverclockEasterEgg()" class="text-[9px] bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-200 border border-cyan-400/50 px-1.5 py-0.5 rounded font-bold active:scale-90 transition">
+                                OVERCLOCK
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- BUG #6: Il Bottone Ribelle "Stampa Pergamena Rapida" -->
+                <div class="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between gap-2 relative min-h-[44px]">
+                    <span class="text-[11px] text-slate-400">Scorciatoia Segreteria:</span>
+                    <button id="bug-6-runaway-btn" onclick="tapRunawayButton()" class="text-xs bg-amber-500/20 border border-amber-400 text-amber-300 px-3 py-1.5 rounded-xl font-bold transition-all duration-200 relative z-20">
+                        🖨️ Stampa Pergamena Rapida
+                    </button>
+                </div>
+            </div>
+
+            <!-- =============================================================== -->
+            <!-- BUG #5: MESSAGGIO DEL RELATORE CON CONTRASTO ZERO (TESTO SCURO) -->
+            <!-- =============================================================== -->
+            <div id="bug-5-contrast" class="cyber-card buggy-glitch rounded-2xl p-4 cursor-pointer transition" title="Doppio Tap/Click per correggere il colore del testo CSS!">
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-bold text-rose-300 flex items-center gap-1.5">
+                        <span>📝</span> Dedica del Relatore & Amici
+                    </span>
+                    <span id="contrast-bug-tag" class="text-[9px] bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded font-mono">
+                        /* CSS bug: color == bg (Doppio Tap) */
+                    </span>
+                </div>
+                <!-- Testo inizialmente quasi invisibile (#141c27 su #0f141c) -->
+                <p id="contrast-secret-text" class="text-xs leading-relaxed transition-colors duration-500 select-none" style="color: #151d28;">
+                    "Caro futuro Dottore, sappiamo benissimo che metà della tesi è stata compilata grazie a caffè bollenti a 70°C e preghiere a StackOverflow alle 2 di notte... ma il risultato è leggendario!"
+                </p>
+            </div>
+
+            <!-- =============================================================== -->
+            <!-- BANNER SBLOCCO PERGAMENA UFFICIALE (180 CFU O 7/7 BUG FIXATI)   -->
+            <!-- =============================================================== -->
+            <div id="pergamena-banner" class="cyber-card rounded-2xl p-4 border-amber-400/50 bg-gradient-to-br from-amber-500/10 to-slate-900">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-sm font-bold text-amber-300 flex items-center gap-1.5">
+                            <span>📜</span> Pergamena di Laurea 110 e Lode
+                        </h2>
+                        <p id="pergamena-status-text" class="text-xs text-slate-300 mt-1">
+                            Raggiungi <b>180 CFU</b> nei minigiochi oppure ripara tutti i <b>7 Bug</b> della pagina per sbloccare la proclamazione!
+                        </p>
+                    </div>
+                    <button id="btn-open-pergamena" onclick="tryOpenPergamena()" class="px-3.5 py-2.5 rounded-xl font-bold text-xs bg-amber-400/20 border border-amber-400 text-amber-300 hover:bg-amber-400 hover:text-slate-950 transition shrink-0">
+                        🔒 Bloccata
+                    </button>
+                </div>
+            </div>
+
+            <!-- =============================================================== -->
+            <!-- SEZIONE I 3 MINIGIOCHI PER I 180 CFU                            -->
+            <!-- =============================================================== -->
+            <div>
+                <div class="flex items-center justify-between mb-2.5">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-green-400">
+                        > Missioni Accademiche (3 Minigiochi = 180 CFU)
+                    </h2>
+                    <span class="text-[11px] text-slate-400">+60 CFU ciascuno</span>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- Minigioco 1: Quiz -->
+                    <div onclick="startQuizGame()" class="cyber-card cyber-card-active rounded-2xl p-4 cursor-pointer flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-xl bg-green-500/15 border border-green-500/40 flex items-center justify-center text-2xl shrink-0">
+                                🧠
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold text-white text-sm">1. Esame Finale (Quiz)</h3>
+                                    <span id="badge-game-1" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                                        +60 CFU
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-0.5">
+                                    Domande di informatica e aneddoti divertenti sulla vita universitaria del neo-dottore.
+                                </p>
+                            </div>
+                        </div>
+                        <span class="text-green-400 font-bold text-lg">›</span>
+                    </div>
+
+                    <!-- Minigioco 2: Hotfix in Produzione (Whack-a-Bug) -->
+                    <div onclick="openWhackView()" class="cyber-card cyber-card-active rounded-2xl p-4 cursor-pointer flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/15 border border-cyan-500/40 flex items-center justify-center text-2xl shrink-0">
+                                🐛
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold text-white text-sm">2. Hotfix in Produzione</h3>
+                                    <span id="badge-game-2" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                                        +60 CFU
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-0.5">
+                                    Schiaccia i Bug e bevi Caffè a 70°C sulla griglia server senza toccare i Test Passati!
+                                </p>
+                            </div>
+                        </div>
+                        <span class="text-green-400 font-bold text-lg">›</span>
+                    </div>
+
+                    <!-- Minigioco 3: Hack the Firewall (Memory Card 3D) -->
+                    <div onclick="startMemoryGame()" class="cyber-card cyber-card-active rounded-2xl p-4 cursor-pointer flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-12 h-12 rounded-xl bg-purple-500/15 border border-purple-500/40 flex items-center justify-center text-2xl shrink-0">
+                                🃏
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-bold text-white text-sm">3. Hack the Firewall</h3>
+                                    <span id="badge-game-3" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">
+                                        +60 CFU
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-0.5">
+                                    Memory 3D: accoppia Python, Java, Linux, Laurea, Git e Pizza per violare il firewall!
+                                </p>
+                            </div>
+                        </div>
+                        <span class="text-green-400 font-bold text-lg">›</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =============================================================== -->
+            <!-- EASTER EGG #1: TERMINALE SEGRETO INTERATTIVO (CON COMANDO HINT) -->
+            <!-- =============================================================== -->
+            <div class="cyber-card rounded-2xl p-4 border-green-500/40">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span>
+                        <span class="text-xs text-green-400 font-bold ml-1.5">bash — terminale_qa</span>
+                    </div>
+                    <span class="text-[10px] text-slate-400">Terminale & Indizi Bug</span>
+                </div>
+
+                <!-- Output del terminale -->
+                <div id="terminal-output" class="terminal-output bg-black/80 rounded-xl p-3 text-xs font-mono h-36 overflow-y-auto space-y-1.5 border border-slate-800 mb-3">
+                    <div class="text-slate-400">GradOS QA Shell v2.0. Tocca <b class="text-rose-300">hint</b> per scoprire dove sono nascosti i 7 bug o <b class="text-amber-300">segreto</b>!</div>
+                </div>
+
+                <!-- Chip rapidi per smartphone -->
+                <div class="flex flex-wrap gap-1.5 mb-2.5">
+                    <button onclick="runTerminalCommand('help')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-green-300 border border-green-500/30 px-2.5 py-1 rounded-lg active:scale-95">
+                        help
+                    </button>
+                    <button onclick="runTerminalCommand('hint')" class="text-[11px] bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-500/40 px-2.5 py-1 rounded-lg font-bold active:scale-95">
+                        🕵️‍♂️ hint (Indizi Bug)
+                    </button>
+                    <button onclick="runTerminalCommand('caffe')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-green-300 border border-green-500/30 px-2.5 py-1 rounded-lg active:scale-95">
+                        caffe
+                    </button>
+                    <button onclick="runTerminalCommand('rm -rf /ansia')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-green-300 border border-green-500/30 px-2.5 py-1 rounded-lg active:scale-95">
+                        rm -rf /ansia
+                    </button>
+                    <button onclick="runTerminalCommand('segreto')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg active:scale-95">
+                        🏆 segreto
+                    </button>
+                    <button onclick="runTerminalCommand('sudo laurea')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 px-2.5 py-1 rounded-lg active:scale-95">
+                        sudo laurea
+                    </button>
+                </div>
+
+                <!-- Input manuale -->
+                <form onsubmit="handleTerminalSubmit(event)" class="flex gap-2">
+                    <div class="flex-grow flex items-center bg-black border border-green-500/40 rounded-xl px-3 py-2">
+                        <span class="text-green-400 text-xs font-bold mr-2">$</span>
+                        <input id="terminal-input" type="text" placeholder="Digita un comando (es. hint, segreto)..." autocomplete="off"
+                            class="bg-transparent text-green-300 text-xs w-full focus:outline-none select-text">
+                    </div>
+                    <button type="submit" class="btn-cyber px-3.5 py-2 rounded-xl text-xs font-bold">
+                        Invia
+                    </button>
+                </form>
+            </div>
+
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- VISTA 2: MINIGIOCO 1 - ESAME FINALE (QUIZ)                          -->
+        <!-- =================================================================== -->
+        <section id="quiz-view" class="hidden space-y-4">
+            <div class="cyber-card rounded-2xl p-5">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                    <button onclick="showView('hub-view')" class="text-xs text-slate-400 hover:text-white flex items-center gap-1">
+                        ‹ Torna all'Hub
+                    </button>
+                    <span id="quiz-progress" class="text-xs font-bold text-green-400">Domanda 1/5</span>
+                    <span class="text-xs bg-green-500/20 text-green-300 px-2 py-0.5 rounded">
+                        Pt: <span id="quiz-score">0</span>
+                    </span>
+                </div>
+
+                <!-- Contenuto Domanda -->
+                <div id="quiz-question-box">
+                    <h3 id="quiz-question-text" class="text-base font-bold text-white mb-4 min-h-[54px]">
+                        Caricamento domanda...
+                    </h3>
+
+                    <div id="quiz-answers-list" class="space-y-2.5">
+                        <!-- Risposte generate via JS -->
+                    </div>
+
+                    <!-- Box Commento Post-Risposta -->
+                    <div id="quiz-feedback-box" class="hidden mt-4 p-3 rounded-xl border text-xs">
+                        <p id="quiz-feedback-text" class="mb-2.5"></p>
+                        <button onclick="nextQuizQuestion()" class="btn-primary-solid w-full py-2.5 rounded-lg text-xs uppercase tracking-wider">
+                            Prossima Domanda ›
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Fine Quiz -->
+                <div id="quiz-end-box" class="hidden text-center py-4">
+                    <div class="text-5xl mb-3">🎓🧠</div>
+                    <h3 class="text-xl font-bold text-white mb-1">Esame Completato!</h3>
+                    <p class="text-sm text-green-400 mb-3">
+                        Risposte esatte: <span id="quiz-final-score" class="font-bold">0</span> su <span id="quiz-total-q">0</span>
+                    </p>
+                    <p id="quiz-final-comment" class="text-xs text-slate-300 italic mb-5 px-2"></p>
+                    <div class="flex gap-2">
+                        <button onclick="startQuizGame()" class="btn-cyber w-1/2 py-3 rounded-xl text-xs font-bold">
+                            🔄 Riprova
+                        </button>
+                        <button onclick="showView('hub-view')" class="btn-primary-solid w-1/2 py-3 rounded-xl text-xs font-bold">
+                            🏠 Torna all'Hub
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- VISTA 3: MINIGIOCO 2 - HOTFIX IN PRODUZIONE (SCHIACCIA IL BUG)      -->
+        <!-- =================================================================== -->
+        <section id="whack-view" class="hidden space-y-4">
+            <div class="cyber-card rounded-2xl p-5">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
+                    <button onclick="stopWhackGame(); showView('hub-view')" class="text-xs text-slate-400 hover:text-white">
+                        ‹ Torna all'Hub
+                    </button>
+                    <span class="text-xs font-bold text-cyan-400">⏱️ Tempo: <span id="whack-timer">22</span>s</span>
+                    <span class="text-xs bg-cyan-500/20 text-cyan-300 px-2.5 py-0.5 rounded font-bold">
+                        Pt: <span id="whack-score">0</span>
+                    </span>
+                </div>
+
+                <!-- Legenda Rapida -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 mb-4 text-[11px] grid grid-cols-2 gap-1.5 text-slate-300">
+                    <div>🐛 <b>Bug / 💥 SegFault:</b> <span class="text-green-400">+10/+20 pt</span></div>
+                    <div>☕ <b>Caffè 70°C:</b> <span class="text-amber-300">+25 pt Bonus!</span></div>
+                    <div class="col-span-2">✅ <b>Test Passato:</b> <span class="text-red-400">NON TOCCARE! (-15 pt)</span></div>
+                </div>
+
+                <!-- Griglia 3x3 Server Nodes -->
+                <div id="whack-grid" class="grid grid-cols-3 gap-2.5 my-3">
+                    <!-- 9 celle generate via JS -->
+                </div>
+
+                <!-- Bottone Avvia / Risultato -->
+                <div id="whack-controls" class="text-center mt-4">
+                    <p id="whack-status-msg" class="text-xs text-slate-300 mb-3">
+                        I server di produzione stanno andando a fuoco prima della laurea! Schiaccia i bug!
+                    </p>
+                    <button id="whack-start-btn" onclick="startWhackGame()" class="btn-primary-solid w-full py-3.5 rounded-xl text-sm uppercase tracking-wider">
+                        🚀 Avvia Hotfix (22s)
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================================== -->
+        <!-- VISTA 4: MINIGIOCO 3 - HACK THE FIREWALL (MEMORY CARD 3D)           -->
+        <!-- =================================================================== -->
+        <section id="memory-view" class="hidden space-y-4">
+            <div class="cyber-card rounded-2xl p-5">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
+                    <button onclick="showView('hub-view')" class="text-xs text-slate-400 hover:text-white">
+                        ‹ Torna all'Hub
+                    </button>
+                    <span class="text-xs font-bold text-purple-400">Mosse: <span id="memory-moves">0</span></span>
+                    <span class="text-xs bg-purple-500/20 text-purple-300 px-2.5 py-0.5 rounded font-bold">
+                        Coppie: <span id="memory-pairs">0</span>/6
+                    </span>
+                </div>
+
+                <p class="text-xs text-slate-400 text-center mb-3">
+                    Trova tutte le 6 coppie di simboli della triennale per decrittare il Firewall!
+                </p>
+
+                <!-- Griglia 4x3 Memory -->
+                <div id="memory-grid" class="grid grid-cols-3 gap-2.5 my-2">
+                    <!-- 12 carte generate via JS -->
+                </div>
+
+                <!-- Fine Memory -->
+                <div id="memory-win-box" class="hidden text-center mt-4 pt-3 border-t border-slate-800">
+                    <p class="text-sm font-bold text-green-400 mb-2">
+                        🎉 Firewall Violato con successo in <span id="memory-final-moves">0</span> mosse! (+60 CFU)
+                    </p>
+                    <div class="flex gap-2">
+                        <button onclick="startMemoryGame()" class="btn-cyber w-1/2 py-2.5 rounded-xl text-xs font-bold">
+                            🔄 Rigiochiamo
+                        </button>
+                        <button onclick="showView('hub-view')" class="btn-primary-solid w-1/2 py-2.5 rounded-xl text-xs font-bold">
+                            🏠 Torna all'Hub
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ======================================================================= -->
+    <!-- FOOTER CON EASTER EGG #3 ("DEPLOY DI VENERDÌ SERA - NON PREMERE")        -->
+    <!-- ======================================================================= -->
+    <footer class="max-w-lg w-full mx-auto px-4 mt-8 text-center">
+        <div class="border-t border-slate-800/80 pt-4 flex flex-col items-center gap-2">
+            <p class="text-[11px] text-slate-500">
+                GradOS v2.0 — Sviluppato dagli amici con ❤️, Caffè a 70°C e zero test in produzione.
+            </p>
+            <!-- EASTER EGG #3 BUTTON -->
+            <button onclick="triggerKernelPanic()" class="text-[11px] bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 active:scale-95 transition">
+                <span>⚠️</span>
+                <span>Deploy in Produzione di Venerdì Sera (NON PREMERE)</span>
+            </button>
+        </div>
+    </footer>
+
+    <!-- ======================================================================= -->
+    <!-- MODALE POPUP QUANDO RIPARI UNO DEI 7 BUG (MOSTRA ANEDDOTO AMICO)        -->
+    <!-- ======================================================================= -->
+    <div id="bug-fixed-popup" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="cyber-card rounded-2xl max-w-sm w-full p-5 border-2 border-green-400 shadow-[0_0_25px_rgba(0,255,102,0.3)] text-center">
+            <div class="text-4xl mb-2" id="bug-popup-icon">🛠️🐛</div>
+            <span class="text-[10px] uppercase tracking-widest bg-green-500/20 text-green-300 border border-green-500/40 px-2.5 py-0.5 rounded-full font-bold">
+                Patch Applicata con Successo!
+            </span>
+            <h3 id="bug-popup-title" class="text-base font-bold text-white mt-2">
+                Bug Riparato!
+            </h3>
+            <div class="my-3.5 p-3.5 bg-slate-900/90 border border-green-500/30 rounded-xl text-xs text-slate-200 leading-relaxed text-left" id="bug-popup-anecdote">
+                Aneddoto sbloccato...
+            </div>
+            <button onclick="closeBugFixedPopup()" class="btn-primary-solid w-full py-2.5 rounded-xl text-xs font-bold">
+                Continua Caccia al Bug ›
+            </button>
+        </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- MODALE CHECKLIST & INDIZI DEI 7 BUG (QA BUG BOUNTY)                     -->
+    <!-- ======================================================================= -->
+    <div id="bugs-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="cyber-card rounded-2xl max-w-md w-full p-5 border border-rose-500/50">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
+                <h3 class="text-sm font-bold text-rose-300 flex items-center gap-1.5">
+                    <span>🐛</span> Report QA: Caccia ai 7 Bug
+                </h3>
+                <button onclick="closeBugModal()" class="text-xs text-slate-400 hover:text-white">✕ Chiudi</button>
+            </div>
+            <p class="text-[11px] text-slate-400 mb-3">
+                Usa il <b>Doppio Tap</b> (su telefono) o il <b>Doppio Click</b> (su PC) sugli elementi sospetti della Home per ripararli e leggere gli aneddoti:
+            </p>
+            <div id="bugs-checklist" class="space-y-2 text-xs max-h-80 overflow-y-auto pr-1">
+                <!-- Generato dinamicamente via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- MODALE LISTA DEI 3 SEGRETI (EASTER EGGS) E 3 MINIGIOCHI                 -->
+    <!-- ======================================================================= -->
+    <div id="secrets-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="cyber-card rounded-2xl max-w-md w-full p-5 border border-amber-400/50">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
+                <h3 class="text-sm font-bold text-amber-300 flex items-center gap-1.5">
+                    <span>🏆</span> Segreti & Traguardi CFU
+                </h3>
+                <button onclick="closeSecretsModal()" class="text-xs text-slate-400 hover:text-white">✕ Chiudi</button>
+            </div>
+            <div id="secrets-list" class="space-y-2 text-xs max-h-80 overflow-y-auto pr-1">
+                <!-- Generato dinamicamente via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- MODALE EASTER EGG #2 (OVERCLOCK CPU 105°C - FILE TOP SECRET)            -->
+    <!-- ======================================================================= -->
+    <div id="cpu-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="cyber-card rounded-2xl max-w-md w-full p-5 border-2 border-cyan-400 shadow-[0_0_25px_rgba(0,229,255,0.3)]">
+            <div class="text-center">
+                <div class="text-4xl mb-2">🔥🌡️💻</div>
+                <span class="text-[10px] uppercase tracking-widest bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 px-2 py-0.5 rounded">
+                    Easter Egg #2 Sbloccato!
+                </span>
+                <h3 class="text-lg font-bold text-cyan-300 mt-2">
+                    OVERCLOCK BOOST: 105°C!
+                </h3>
+                <p class="text-xs text-slate-400 mt-1">
+                    Hai spinto la CPU oltre ogni limite fisico e hai decriptato un file segreto degli amici:
+                </p>
+
+                <div class="my-4 p-3.5 bg-black/90 border border-cyan-500/40 rounded-xl text-left text-xs text-cyan-200 font-mono leading-relaxed" id="cpu-secret-message">
+                    <!-- Da CONFIG -->
+                </div>
+
+                <button onclick="closeCpuModal()" class="btn-primary-solid w-full py-3 rounded-xl text-xs font-bold">
+                    ❄️ Raffredda Server e Continua
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- MODALE EASTER EGG #3 (FINTO KERNEL PANIC / BLUE SCREEN OF DEATH)        -->
+    <!-- ======================================================================= -->
+    <div id="bsod-modal" class="fixed inset-0 z-50 bg-[#0044cc] text-white hidden flex-col justify-between p-6 font-mono">
+        <div class="max-w-md mx-auto my-auto space-y-4">
+            <div class="text-6xl font-bold">:(</div>
+            <h2 class="text-lg font-bold">
+                FATAL ERROR: DEPLOY_ON_FRIDAY_EXCEPTION
+            </h2>
+            <p class="text-xs leading-relaxed text-blue-100">
+                È stato rilevato un deploy in produzione di venerdì sera proprio prima della festa di laurea.
+                Tutti i server dell'ateneo sono andati in Kernel Panic.
+            </p>
+            <div class="text-xs bg-blue-900/60 p-3 rounded border border-blue-400/40">
+                Ripristino del backup alcolico in corso: <span id="bsod-percent" class="font-bold">0%</span>
+            </div>
+
+            <div id="bsod-reveal" class="hidden pt-4 border-t border-blue-400/50 space-y-3">
+                <div class="bg-white/10 p-3 rounded-xl text-xs text-amber-300 font-bold" id="bsod-joke-text">
+                    <!-- Da CONFIG -->
+                </div>
+                <button onclick="closeBsodModal()" class="w-full py-3 bg-white text-blue-900 font-bold rounded-xl text-xs uppercase tracking-wider shadow-lg">
+                    😂 Torna alla Festa (+Segreto Sbloccato!)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- MODALE FINALE: PERGAMENA DI LAUREA UFFICIALE 110 E LODE                 -->
+    <!-- ======================================================================= -->
+    <div id="pergamena-modal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+        <div class="cyber-card rounded-2xl max-w-md w-full p-6 border-2 border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.3)] relative my-auto">
+            <div class="text-center">
+                <div class="text-5xl mb-2">🎓📜🥂</div>
+                <span id="pergamena-badge-rank" class="text-[10px] uppercase tracking-widest bg-amber-400/20 text-amber-300 border border-amber-400/40 px-2.5 py-0.5 rounded-full font-bold">
+                    Proclamazione Ufficiale
+                </span>
+                <h2 id="pergamena-title" class="text-xl font-bold text-white mt-2">
+                    Dottore in Informatica!
+                </h2>
+                <p id="pergamena-subtitle" class="text-xs text-amber-300 font-bold mt-0.5">
+                    Voto: 110 e Lode con Abbraccio Accademico
+                </p>
+
+                <div class="my-4 p-4 bg-slate-900/90 border border-amber-400/30 rounded-xl text-left text-xs text-slate-200 space-y-2.5 leading-relaxed">
+                    <p id="pergamena-body"></p>
+                    <p id="pergamena-signatures" class="text-right font-bold text-amber-300 pt-2 border-t border-slate-800"></p>
+                </div>
+
+                <div class="flex gap-2">
+                    <button onclick="startConfetti()" class="btn-cyber w-1/2 py-3 rounded-xl text-xs font-bold">
+                        🎉 Più Coriandoli!
+                    </button>
+                    <button onclick="closePergamenaModal()" class="btn-primary-solid w-1/2 py-3 rounded-xl text-xs font-bold">
+                        Chiudi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast di Notifica in Basso -->
+    <div id="toast-notification" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border-2 border-amber-400 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-bold transition-all duration-300 opacity-0 pointer-events-none translate-y-4 w-[92%] max-w-sm">
+        <span class="text-xl" id="toast-icon">🏆</span>
+        <div>
+            <div class="text-[10px] uppercase text-amber-400" id="toast-header">Nuovo Traguardo!</div>
+            <div id="toast-text">Trofeo sbloccato!</div>
+        </div>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- LOGICA JAVASCRIPT E CONFIGURAZIONE PERSONALIZZABILE                     -->
+    <!-- ======================================================================= -->
+    <script>
+        // =========================================================================
+        // ⬇️⬇️⬇️ MODIFICA QUI I DATI E LE DOMANDE DEL TUO AMICO ⬇️⬇️⬇️
+        // =========================================================================
+        const CONFIG = {
+            // 1. Dati del Laureando
+            nomeLaureando: "Dott. Marco", // <-- Inserisci qui il vero nome o soprannome!
+            corsoDiLaurea: "Laurea Triennale in Informatica",
+
+            // 2. Aneddoti divertenti sbloccati quando il tuo amico ripara ciascuno dei 7 Bug!
+            bugs: {
+                bug1: {
+                    titolo: "Bug #1 Fixato: Nome Candidato!",
+                    indizio: "Guarda il nome del candidato in alto ('undefined NaN'): fai Doppio Tap/Click sopra!",
+                    aneddoto: "Hai riparato l'interpolazione di stringa! Finalmente non sei più 'undefined NaN', ma ufficialmente un Dottore in Informatica!"
+                },
+                bug2: {
+                    titolo: "Bug #2 Fixato: Avatar Raddrizzato!",
+                    indizio: "L'icona dell'informatico nella prima card è montata a testa in giù (rotate 180deg): fai Doppio Tap/Click!",
+                    aneddoto: "Hai rimosso il 'rotate(180deg)'! Proprio come quando dopo 4 ore di debug scopri che avevi invertito la condizione dell'if!"
+                },
+                bug3: {
+                    titolo: "Bug #3 Fixato: Pasta Termica Applicata (38°C)!",
+                    indizio: "Il termometro CPU segna 98°C in rosso! Fai Doppio Tap/Click sulla temperatura per mettere la pasta termica.",
+                    aneddoto: "Temperatura scesa da 98°C a 38°C! Il tuo portatile durante la compilazione del progetto di tesi faceva più rumore di un Boeing 747 al decollo."
+                },
+                bug4: {
+                    titolo: "Bug #4 Fixato: Integer Overflow dei Caffè!",
+                    indizio: "Il contatore dei Caffè Bevuti segna '-2147483648': fai Doppio Tap/Click per riparare l'overflow a 32-bit!",
+                    aneddoto: "Hai bevuto così tanti caffè bollenti a 70°C in questi tre anni che hai mandato in overflow una variabile intera a 32 bit!"
+                },
+                bug5: {
+                    titolo: "Bug #5 Fixato: Contrasto Dedica Relatore!",
+                    indizio: "Nel box 'Dedica del Relatore & Amici' il testo è scuro su sfondo scuro: fai Doppio Tap/Click per accendere il testo!",
+                    aneddoto: "Ecco svelato il messaggio nascosto! Quante volte un CSS sbagliato ti ha fatto impazzire prima di una consegna?",
+                    testoSvelato: "\"Caro futuro Dottore, sappiamo benissimo che metà della tesi è stata compilata grazie a caffè a 70°C e preghiere a StackOverflow alle 2 di notte... ma il risultato è da 110 e Lode!\""
+                },
+                bug6: {
+                    titolo: "Bug #6 Fixato: Bottone Ribelle Catturato!",
+                    indizio: "Prova a premere per 4 volte consecutive il bottone 'Stampa Pergamena Rapida' che scappa!",
+                    aneddoto: "Hai acchiappato il bottone ribelle! Era sfuggente quasi quanto la segreteria studenti quando devi farti convalidare i crediti!"
+                },
+                bug7: {
+                    titolo: "Bug #7 Fixato: Errore 404 Vita Sociale!",
+                    indizio: "C'è un adesivo rosso storto ('ERRORE 404: Vita Sociale') in alto a destra: fai Doppio Tap/Click per rimuoverlo!",
+                    aneddoto: "Patch installata: da oggi la tua Vita Sociale torna finalmente online senza più chiusure per sessione d'esami!"
+                }
+            },
+
+            // 3. Domande del Minigioco 1 (Esame Finale - Quiz)
+            // Ricorda: correctIndex parte da 0 (0 = prima risposta, 1 = seconda, 2 = terza, 3 = quarta)
+            quizQuestions: [
+                {
+                    question: "Qual è la complessità temporale nel caso peggiore della Ricerca Binaria (Binary Search)?",
+                    answers: ["O(1)", "O(n)", "O(log n)", "O(n log n)"],
+                    correctIndex: 2,
+                    commento: "Esatto! O(log n)... almeno le basi di Algoritmi e Strutture Dati sono sopravvissute!"
+                },
+                {
+                    question: "A quale temperatura rigorosamente ustionante beve il caffè prima di un esame?",
+                    answers: [
+                        "Freddo shakerato",
+                        "Tiepido a 35°C",
+                        "Rigorosamente a 70°C appena uscito dalla macchinetta",
+                        "Beve solo camomilla"
+                    ],
+                    correctIndex: 2,
+                    commento: "Il leggendario caffè a 70°C: carburante ufficiale di ogni sessione d'esami!"
+                },
+                {
+                    question: "In SQL, cosa succede se esegui 'DELETE FROM esami_verbalizzati;' senza il WHERE?",
+                    answers: [
+                        "Elimina solo l'ultimo appello",
+                        "Rasa al suolo l'intera carriera universitaria in 0.001 secondi",
+                        "Chiede conferma con un popup gentile",
+                        "Aggiunge 5 punti alla tesi"
+                    ],
+                    correctIndex: 1,
+                    commento: "Terrore puro di ogni informatico: dimenticare il WHERE in produzione!"
+                },
+                {
+                    question: "Qual è stato il vero co-relatore silenzioso di tutta la sua triennale?",
+                    answers: [
+                        "Il manuale cartaceo di C++ del 1998",
+                        "StackOverflow + IA consultati alle 3 di notte",
+                        "Il blocco note di Windows",
+                        "Il televideo"
+                    ],
+                    correctIndex: 1,
+                    commento: "Saper cercare l'errore giusto al momento giusto è il 90% del mestiere!"
+                },
+                {
+                    question: "Qual è la risposta standard quando il codice crasha durante la demo?",
+                    answers: [
+                        "'Sul mio computer in locale funzionava benissimo!'",
+                        "'È colpa delle interferenze solari'",
+                        "'Ho dimenticato il punto e virgola in Python'",
+                        "'Non è un bug, è una feature!'"
+                    ],
+                    correctIndex: 0,
+                    commento: "Classico intramontabile: 'Works on my machine', e si chiude il ticket!"
+                }
+            ],
+
+            // 4. Messaggi Segreti dei 3 Easter Egg
+            easterEggs: {
+                // Easter Egg #1: Comando 'segreto' nel terminale
+                terminalSegreto: "🕵️‍♂️ [SEGRETO #1 SBLOCCATO]: Hai trovato il file nascosto nella shell! Ricordati che stasera il debug si fa al bancone del bar: primo giro offerto dal Dottore!",
+                
+                // Easter Egg #2: Bottone 'OVERCLOCK' (105°C)
+                cpuOverclockMessage: "📂 [TOP_SECRET_AMICI.txt]: Se hai premuto il pulsante di Overclock a 105°C significa che non resisti alla tentazione di testare ogni singolo bottone! Siamo super fieri di te Dottore, goditi questa giornata speciale!",
+                
+                // Easter Egg #3: Bottone 'Deploy di Venerdì Sera' nel footer
+                kernelPanicJoke: "Scherzetto! 😂 Nessun server universitario è esploso. Però ricordati la regola d'oro anche ora che sei Dottore: MAI fare deploy il venerdì sera!"
+            },
+
+            // 5. Pergamena e Dedica Finale degli Amici
+            pergamena: {
+                titolo: "Dottore in Informatica!",
+                sottotitolo: "Voto Ufficiale degli Amici: 110 e Lode + Abbraccio Accademico",
+                messaggio: "Dopo innumerevoli nottate passate a dare la caccia a un punto e virgola mancante, esami impossibili, litri di caffè a 70°C e commit disperati all'ultimo minuto... CE L'HAI FATTA! Hai superato i nostri minigiochi e riparato i bug di questo sito proprio come un vero professionista. Siamo orgogliosissimi di te: congratulazioni Dottore, il tuo futuro è tutto da programmare!",
+                firme: "— Con infinito affetto, i tuoi amici di sempre ❤️🎓🥂"
+            }
+        };
+        // =========================================================================
+        // ⬆️⬆️⬆️ FINE AREA DI MODIFICA PERSONALIZZATA ⬆️⬆️⬆️
+        // =========================================================================
+
+        // Stato globale dell'app GradOS v2.0
+        const state = {
+            cfu: 0,
+            runawayTaps: 0,
+            bugsFixed: {
+                bug1: false, // Nome undefined NaN
+                bug2: false, // Avatar capovolto 180deg
+                bug3: false, // CPU 98°C senza pasta termica
+                bug4: false, // Caffè integer overflow
+                bug5: false, // Contrasto zero dedica relatore
+                bug6: false, // Bottone ribelle
+                bug7: false  // Badge 404 Vita Sociale z-index 9999
+            },
+            gamesCompleted: {
+                game1: false,
+                game2: false,
+                game3: false
+            },
+            secretsUnlocked: {
+                eggTerminal: false,
+                eggOverclock: false,
+                eggBsod: false
+            }
+        };
+
+        // =========================================================================
+        // UTILITY: DOPPIO TAP (MOBILE) & DOPPIO CLICK (DESKTOP) SENZA ZOOM
+        // =========================================================================
+        function addDoubleTap(element, callback) {
+            if (!element) return;
+            let lastTapTime = 0;
+
+            // Gestione Touch per Smartphone
+            element.addEventListener('touchend', function(e) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTapTime;
+                if (tapLength > 0 && tapLength < 360) {
+                    e.preventDefault();
+                    callback(e);
+                    lastTapTime = 0;
+                } else {
+                    lastTapTime = currentTime;
+                }
+            }, { passive: false });
+
+            // Gestione Doppio Click per Mouse / PC
+            element.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+                callback(e);
+            });
+        }
+
+        // Inizializzazione al caricamento della pagina
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('candidate-course').innerText = CONFIG.corsoDiLaurea;
+            document.getElementById('contrast-secret-text').innerText = CONFIG.bugs.bug5.testoSvelato;
+            document.getElementById('cpu-secret-message').innerText = CONFIG.easterEggs.cpuOverclockMessage;
+            document.getElementById('bsod-joke-text').innerText = CONFIG.easterEggs.kernelPanicJoke;
+            document.getElementById('pergamena-title').innerText = CONFIG.pergamena.titolo;
+            document.getElementById('pergamena-subtitle').innerText = CONFIG.pergamena.sottotitolo;
+            document.getElementById('pergamena-body').innerText = CONFIG.pergamena.messaggio;
+            document.getElementById('pergamena-signatures').innerText = CONFIG.pergamena.firme;
+
+            setupAllSevenBugs();
+            initWhackGrid();
+            updateHUD();
+        });
+
+        // =========================================================================
+        // LOGICA DEI 7 BUG INTEGRATI NELL'INTERFACCIA (QA BUG BOUNTY)
+        // =========================================================================
+        function setupAllSevenBugs() {
+            // BUG #1: Doppio Tap sul Nome Candidato ("Dott. undefined NaN [object Object]")
+            addDoubleTap(document.getElementById('bug-1-name'), () => {
+                if (state.bugsFixed.bug1) return;
+                const box = document.getElementById('bug-1-name');
+                box.classList.remove('buggy-glitch');
+                box.classList.add('fixed-anim', 'bg-green-500/10', 'border', 'border-green-500/40');
+                box.innerHTML = `
+                    <div class="text-[9px] text-green-400 font-mono">✓ BUG #1 PATCHED</div>
+                    <h1 class="text-lg sm:text-xl font-bold neon-text leading-tight">${CONFIG.nomeLaureando}</h1>
+                `;
+                registerBugFix('bug1', '🎓');
+            });
+
+            // BUG #2: Doppio Tap sull'Avatar Capovolto (rotate 180deg)
+            addDoubleTap(document.getElementById('bug-2-avatar'), () => {
+                if (state.bugsFixed.bug2) return;
+                const box = document.getElementById('bug-2-avatar');
+                const emoji = document.getElementById('avatar-emoji');
+                const label = document.getElementById('avatar-bug-label');
+                box.classList.remove('buggy-glitch');
+                box.classList.add('fixed-anim', 'bg-slate-900', 'border', 'border-green-500/40');
+                emoji.classList.remove('rotate-180');
+                emoji.classList.add('rotate-0');
+                label.innerText = "✓ CSS OK";
+                label.className = "text-[8px] text-green-400 font-mono mt-1 block";
+                registerBugFix('bug2', '👨‍💻');
+            });
+
+            // BUG #3: Doppio Tap sulla CPU a 98°C (sia nella barra HUD che nella card Hardware)
+            const fixCpuBug = () => {
+                if (state.bugsFixed.bug3) return;
+                const hudCpu = document.getElementById('hud-cpu-bug');
+                hudCpu.className = "flex items-center gap-1 bg-slate-900 border border-cyan-400/50 text-cyan-300 px-2 py-1 rounded-full font-bold fixed-anim";
+                document.getElementById('cpu-temp-display').innerText = "38°C ❄️";
+
+                document.getElementById('cpu-card-status').innerText = "✓ OTTIMALE";
+                document.getElementById('cpu-card-status').className = "text-[9px] text-green-400 font-bold";
+                document.getElementById('cpu-card-val').innerText = "38°C (Pasta OK)";
+                document.getElementById('cpu-card-val').className = "text-xs sm:text-sm font-bold text-cyan-300 mt-0.5";
+
+                registerBugFix('bug3', '❄️');
+            };
+            addDoubleTap(document.getElementById('hud-cpu-bug'), fixCpuBug);
+            addDoubleTap(document.getElementById('bug-3-cpu-card'), fixCpuBug);
+
+            // BUG #4: Doppio Tap sul Contatore Caffè in Integer Overflow (-2147483648)
+            addDoubleTap(document.getElementById('bug-4-coffee'), () => {
+                if (state.bugsFixed.bug4) return;
+                const box = document.getElementById('bug-4-coffee');
+                box.classList.remove('buggy-glitch');
+                box.classList.add('fixed-anim', 'bg-slate-900/90', 'border', 'border-green-500/40');
+                document.getElementById('coffee-bug-tag').innerText = "✓ INT64_OK";
+                document.getElementById('coffee-bug-tag').className = "text-[9px] text-green-400 font-bold";
+                document.getElementById('coffee-counter-val').innerText = "9.999+ (a 70°C)";
+                document.getElementById('coffee-counter-val').className = "text-xs sm:text-sm font-bold text-amber-300 mt-0.5 font-mono";
+                document.getElementById('coffee-hint-sub').innerText = "Carburante di Tesi";
+                registerBugFix('bug4', '☕');
+            });
+
+            // BUG #5: Doppio Tap sul Box Dedica Relatore a Contrasto Zero
+            addDoubleTap(document.getElementById('bug-5-contrast'), () => {
+                if (state.bugsFixed.bug5) return;
+                const box = document.getElementById('bug-5-contrast');
+                const text = document.getElementById('contrast-secret-text');
+                const tag = document.getElementById('contrast-bug-tag');
+                box.classList.remove('buggy-glitch');
+                box.classList.add('fixed-anim', 'border-green-500/50');
+                text.style.color = "#a7f3d0";
+                text.classList.add('font-bold');
+                tag.innerText = "✓ Contrasto CSS Riparato";
+                tag.className = "text-[9px] bg-green-500/20 text-green-300 border border-green-500/40 px-2 py-0.5 rounded font-mono";
+                registerBugFix('bug5', '📝');
+            });
+
+            // BUG #7: Doppio Tap sul Badge Storto "ERRORE 404: Vita Sociale non trovata"
+            addDoubleTap(document.getElementById('bug-7-floating'), () => {
+                if (state.bugsFixed.bug7) return;
+                const badge = document.getElementById('bug-7-floating');
+                badge.className = "absolute -top-3 right-2 z-20 bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-lg border border-emerald-300 transform rotate-0 fixed-anim transition-all";
+                badge.innerHTML = `✅ Vita Sociale: Ripristinata!`;
+                registerBugFix('bug7', '🍻');
+            });
+        }
+
+        // BUG #6: Il Bottone Ribelle che scappa per 3 volte prima di farsi catturare al 4° tocco
+        function tapRunawayButton() {
+            const btn = document.getElementById('bug-6-runaway-btn');
+            if (state.bugsFixed.bug6) {
+                tryOpenPergamena();
+                return;
+            }
+
+            state.runawayTaps++;
+            if (state.runawayTaps === 1) {
+                btn.style.transform = "translate(-45px, -18px) rotate(-6deg)";
+                btn.innerText = "🏃‍♂️ Ops! Troppo lento!";
+            } else if (state.runawayTaps === 2) {
+                btn.style.transform = "translate(18px, 22px) rotate(8deg)";
+                btn.innerText = "😜 Quasi preso! (Tap #2)";
+            } else if (state.runawayTaps === 3) {
+                btn.style.transform = "translate(-30px, 14px) rotate(-4deg)";
+                btn.innerText = "⚡ Ultimo sforzo! (Tap #3)";
+            } else {
+                btn.style.transform = "translate(0, 0) rotate(0deg)";
+                btn.className = "text-xs bg-green-500/20 border border-green-400 text-green-300 px-3 py-1.5 rounded-xl font-bold fixed-anim transition-all";
+                btn.innerText = "✓ Bottone Fissato!";
+                registerBugFix('bug6', '🎯');
+            }
+        }
+
+        // Registra un Bug come riparato, aggiorna contatori e mostra il popup con l'aneddoto
+        function registerBugFix(bugKey, icon) {
+            if (state.bugsFixed[bugKey]) return;
+            state.bugsFixed[bugKey] = true;
+            updateHUD();
+
+            const bugData = CONFIG.bugs[bugKey];
+            document.getElementById('bug-popup-icon').innerText = icon + "🛠️";
+            document.getElementById('bug-popup-title').innerText = bugData.titolo;
+            document.getElementById('bug-popup-anecdote').innerText = bugData.aneddoto;
+
+            const modal = document.getElementById('bug-fixed-popup');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeBugFixedPopup() {
+            const modal = document.getElementById('bug-fixed-popup');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+
+            // Se ha appena riparato tutti e 7 i bug, festeggiamo!
+            const fixedCount = Object.values(state.bugsFixed).filter(Boolean).length;
+            if (fixedCount === 7) {
+                showToast("🐛🏆", "QA MASTER!", "Hai riparato tutti i 7 Bug! La Pergamena è sbloccata!");
+            }
+        }
+
+        // =========================================================================
+        // GESTIONE HUD, PROGRESSO CFU E STATO PERGAMENA
+        // =========================================================================
+        function updateHUD() {
+            const cfuPercent = Math.min(100, Math.round((state.cfu / 180) * 100));
+            document.getElementById('cfu-progress-bar').style.width = `${cfuPercent}%`;
+            document.getElementById('cfu-counter').innerText = `${state.cfu} / 180`;
+
+            const fixedBugsCount = Object.values(state.bugsFixed).filter(Boolean).length;
+            document.getElementById('bugs-counter').innerText = `${fixedBugsCount}/7`;
+
+            const remainingBugs = 7 - fixedBugsCount;
+            const qaInline = document.getElementById('qa-status-inline');
+            if (remainingBugs === 0) {
+                qaInline.innerText = "✓ QA: 0 Bug!";
+                qaInline.className = "text-green-300 font-bold";
+            } else {
+                qaInline.innerText = `QA: ${remainingBugs} Bug rimasti`;
+            }
+
+            const secretsCount = Object.values(state.secretsUnlocked).filter(Boolean).length;
+            document.getElementById('secrets-counter').innerText = `${secretsCount}/3`;
+
+            // Badge dei 3 minigiochi
+            ['game1', 'game2', 'game3'].forEach((g, idx) => {
+                if (state.gamesCompleted[g]) {
+                    const badge = document.getElementById(`badge-game-${idx + 1}`);
+                    badge.innerText = "✓ 60 CFU";
+                    badge.className = "text-[10px] px-2 py-0.5 rounded bg-green-500/20 text-green-300 border border-green-500/40 font-bold";
+                }
+            });
+
+            // Controlla sblocco Pergamena (180 CFU oppure tutti i 7 Bug riparati)
+            const btnPergamena = document.getElementById('btn-open-pergamena');
+            const statusPergamena = document.getElementById('pergamena-status-text');
+            if (state.cfu >= 180 || fixedBugsCount === 7) {
+                btnPergamena.innerText = "🎓 Apri Ora!";
+                btnPergamena.className = "px-3.5 py-2.5 rounded-xl font-bold text-xs bg-amber-400 text-slate-950 shadow-[0_0_15px_rgba(251,191,36,0.6)] shrink-0 animate-pulse";
+                if (state.cfu >= 180 && fixedBugsCount === 7) {
+                    statusPergamena.innerHTML = "🏆 <b>180 CFU + 7/7 Bug Fixati!</b> Hai raggiunto il grado <b>Full Stack 110L + QA Master</b>!";
+                } else {
+                    statusPergamena.innerHTML = "🎉 <b>Traguardo Raggiunto!</b> Clicca su <b>Apri Ora</b> per leggere la tua Pergamena di Laurea!";
+                }
+            }
+        }
+
+        function completeMinigame(gameKey) {
+            if (!state.gamesCompleted[gameKey]) {
+                state.gamesCompleted[gameKey] = true;
+                state.cfu = Math.min(180, state.cfu + 60);
+                updateHUD();
+                showToast("🎓", "+60 CFU Guadagnati!", `Totale crediti: ${state.cfu}/180 CFU`);
+            }
+        }
+
+        function unlockSecret(secretKey, title) {
+            if (!state.secretsUnlocked[secretKey]) {
+                state.secretsUnlocked[secretKey] = true;
+                updateHUD();
+                showToast("🏆", "Easter Egg Scoperto!", title);
+            }
+        }
+
+        let toastTimer = null;
+        function showToast(icon, header, text) {
+            const toast = document.getElementById('toast-notification');
+            document.getElementById('toast-icon').innerText = icon;
+            document.getElementById('toast-header').innerText = header;
+            document.getElementById('toast-text').innerText = text;
+            toast.classList.remove('opacity-0', 'translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-4');
+            }, 3400);
+        }
+
+        // Navigazione tra le schermate
+        function showView(viewId) {
+            const views = ['hub-view', 'quiz-view', 'whack-view', 'memory-view'];
+            views.forEach(id => {
+                const el = document.getElementById(id);
+                if (id === viewId) {
+                    el.classList.remove('hidden');
+                    el.classList.add('block');
+                } else {
+                    el.classList.remove('block');
+                    el.classList.add('hidden');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // =========================================================================
+        // MINIGIOCO 1: ESAME FINALE (QUIZ)
+        // =========================================================================
+        let quizIndex = 0;
+        let quizScore = 0;
+        let quizAnswered = false;
+
+        function startQuizGame() {
+            quizIndex = 0;
+            quizScore = 0;
+            document.getElementById('quiz-score').innerText = "0";
+            document.getElementById('quiz-question-box').classList.remove('hidden');
+            document.getElementById('quiz-end-box').classList.add('hidden');
+            showView('quiz-view');
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            quizAnswered = false;
+            const q = CONFIG.quizQuestions[quizIndex];
+            document.getElementById('quiz-progress').innerText = `Domanda ${quizIndex + 1}/${CONFIG.quizQuestions.length}`;
+            document.getElementById('quiz-question-text').innerText = `> ${q.question}`;
+            document.getElementById('quiz-feedback-box').classList.add('hidden');
+
+            const list = document.getElementById('quiz-answers-list');
+            list.innerHTML = '';
+
+            q.answers.forEach((ans, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3.5 rounded-xl border border-green-500/40 bg-slate-900/90 text-xs text-slate-200 hover:border-green-400 transition flex items-center gap-2.5";
+                btn.innerHTML = `<span class="text-green-400 font-bold">[${idx + 1}]</span> <span>${ans}</span>`;
+                btn.onclick = () => selectQuizAnswer(idx, btn);
+                list.appendChild(btn);
+            });
+        }
+
+        function selectQuizAnswer(selectedIndex, btnElement) {
+            if (quizAnswered) return;
+            quizAnswered = true;
+
+            const q = CONFIG.quizQuestions[quizIndex];
+            const buttons = document.getElementById('quiz-answers-list').querySelectorAll('button');
+            const feedbackBox = document.getElementById('quiz-feedback-box');
+            const feedbackText = document.getElementById('quiz-feedback-text');
+
+            if (selectedIndex === q.correctIndex) {
+                quizScore++;
+                document.getElementById('quiz-score').innerText = quizScore;
+                btnElement.className = "w-full text-left p-3.5 rounded-xl border-2 border-emerald-400 bg-emerald-500/20 text-xs text-white font-bold flex items-center gap-2.5";
+                feedbackBox.className = "mt-4 p-3.5 rounded-xl border border-emerald-400/50 bg-emerald-950/40 text-emerald-200 text-xs block";
+                feedbackText.innerText = "✅ CORRETTO! " + (q.commento || "");
+            } else {
+                btnElement.className = "w-full text-left p-3.5 rounded-xl border-2 border-red-400 bg-red-500/20 text-xs text-white font-bold flex items-center gap-2.5";
+                buttons[q.correctIndex].className = "w-full text-left p-3.5 rounded-xl border-2 border-emerald-400 bg-emerald-500/20 text-xs text-white font-bold flex items-center gap-2.5";
+                feedbackBox.className = "mt-4 p-3.5 rounded-xl border border-red-400/50 bg-red-950/40 text-red-200 text-xs block";
+                feedbackText.innerText = "❌ ERRORE DI COMPILAZIONE! " + (q.commento || "");
+            }
+        }
+
+        function nextQuizQuestion() {
+            quizIndex++;
+            if (quizIndex < CONFIG.quizQuestions.length) {
+                renderQuizQuestion();
+            } else {
+                finishQuizGame();
+            }
+        }
+
+        function finishQuizGame() {
+            document.getElementById('quiz-question-box').classList.add('hidden');
+            document.getElementById('quiz-end-box').classList.remove('hidden');
+            document.getElementById('quiz-final-score').innerText = quizScore;
+            document.getElementById('quiz-total-q').innerText = CONFIG.quizQuestions.length;
+
+            const comment = document.getElementById('quiz-final-comment');
+            if (quizScore === CONFIG.quizQuestions.length) {
+                comment.innerText = "110 e Lode! Non hai sbagliato neanche una virgola, sei pronto per la proclamazione!";
+            } else if (quizScore >= Math.ceil(CONFIG.quizQuestions.length / 2)) {
+                comment.innerText = "Esame verbalizzato! Qualche piccolo warning qua e là, ma i 60 CFU sono tuoi!";
+            } else {
+                comment.innerText = "Segmentation Fault! Meno male che la tesi è già pronta... ti diamo comunque i 60 CFU sulla fiducia!";
+            }
+
+            completeMinigame('game1');
+        }
+
+        // =========================================================================
+        // MINIGIOCO 2: HOTFIX IN PRODUZIONE (WHACK-A-BUG)
+        // =========================================================================
+        let whackScore = 0;
+        let whackTimeLeft = 22;
+        let whackTimerInterval = null;
+        let whackSpawnTimeout = null;
+        let whackActive = false;
+        let activeCellIndex = -1;
+        let activeItemType = null;
+
+        const WHACK_ITEMS = [
+            { id: 'bug', icon: '🐛', label: 'Bug', points: 10, color: 'border-green-400 bg-green-500/20' },
+            { id: 'segfault', icon: '💥', label: 'SegFault', points: 15, color: 'border-amber-400 bg-amber-500/20' },
+            { id: 'null', icon: '⚠️', label: 'NullPtr', points: 20, color: 'border-cyan-400 bg-cyan-500/20' },
+            { id: 'coffee', icon: '☕', label: 'Caffè 70°C', points: 25, color: 'border-yellow-300 bg-yellow-500/25' },
+            { id: 'testpass', icon: '✅', label: 'Test OK', points: -15, color: 'border-red-400 bg-red-500/20' }
+        ];
+
+        function initWhackGrid() {
+            const grid = document.getElementById('whack-grid');
+            grid.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('button');
+                cell.id = `whack-cell-${i}`;
+                cell.className = "h-24 rounded-2xl bg-slate-900 border border-slate-700/80 flex flex-col items-center justify-center relative transition-all active:scale-90";
+                cell.innerHTML = `<span class="text-[10px] text-slate-600 font-mono">srv-0${i + 1}</span>`;
+                cell.onclick = () => tapWhackCell(i);
+                grid.appendChild(cell);
+            }
+        }
+
+        function openWhackView() {
+            stopWhackGame();
+            document.getElementById('whack-score').innerText = "0";
+            document.getElementById('whack-timer').innerText = "22";
+            document.getElementById('whack-start-btn').innerText = "🚀 Avvia Hotfix (22s)";
+            document.getElementById('whack-start-btn').classList.remove('hidden');
+            showView('whack-view');
+        }
+
+        function startWhackGame() {
+            stopWhackGame();
+            whackScore = 0;
+            whackTimeLeft = 22;
+            whackActive = true;
+            document.getElementById('whack-score').innerText = whackScore;
+            document.getElementById('whack-timer').innerText = whackTimeLeft;
+            document.getElementById('whack-start-btn').classList.add('hidden');
+            document.getElementById('whack-status-msg').innerText = "TOCCA I BUG E IL CAFFÈ A 70°C! Evita i Test Passati (✅)!";
+
+            whackTimerInterval = setInterval(() => {
+                whackTimeLeft--;
+                document.getElementById('whack-timer').innerText = whackTimeLeft;
+                if (whackTimeLeft <= 0) {
+                    finishWhackGame();
+                }
+            }, 1000);
+
+            spawnNextWhackItem();
+        }
+
+        function spawnNextWhackItem() {
+            if (!whackActive) return;
+            clearWhackGrid();
+
+            const randomCell = Math.floor(Math.random() * 9);
+            const rand = Math.random();
+            let item;
+            if (rand < 0.30) item = WHACK_ITEMS[0];
+            else if (rand < 0.55) item = WHACK_ITEMS[1];
+            else if (rand < 0.72) item = WHACK_ITEMS[2];
+            else if (rand < 0.85) item = WHACK_ITEMS[3];
+            else item = WHACK_ITEMS[4];
+
+            activeCellIndex = randomCell;
+            activeItemType = item;
+
+            const cell = document.getElementById(`whack-cell-${randomCell}`);
+            cell.className = `h-24 rounded-2xl border-2 ${item.color} flex flex-col items-center justify-center relative transition-all active:scale-90`;
+            cell.innerHTML = `
+                <span class="text-3xl leading-none">${item.icon}</span>
+                <span class="text-[10px] font-bold text-white mt-1">${item.label}</span>
+            `;
+
+            const stayDuration = Math.max(520, 900 - (22 - whackTimeLeft) * 15);
+            whackSpawnTimeout = setTimeout(() => {
+                if (whackActive) spawnNextWhackItem();
+            }, stayDuration);
+        }
+
+        function tapWhackCell(index) {
+            if (!whackActive || index !== activeCellIndex || !activeItemType) return;
+
+            const pts = activeItemType.points;
+            whackScore = Math.max(0, whackScore + pts);
+            document.getElementById('whack-score').innerText = whackScore;
+
+            const cell = document.getElementById(`whack-cell-${index}`);
+            const sign = pts > 0 ? `+${pts}` : `${pts}`;
+            const colorClass = pts > 0 ? 'text-green-400' : 'text-red-400';
+            cell.innerHTML = `<span class="text-base font-bold ${colorClass}">${sign} pt!</span>`;
+
+            activeCellIndex = -1;
+            activeItemType = null;
+            clearTimeout(whackSpawnTimeout);
+            whackSpawnTimeout = setTimeout(() => {
+                if (whackActive) spawnNextWhackItem();
+            }, 220);
+        }
+
+        function clearWhackGrid() {
+            activeCellIndex = -1;
+            activeItemType = null;
+            for (let i = 0; i < 9; i++) {
+                const cell = document.getElementById(`whack-cell-${i}`);
+                if (cell) {
+                    cell.className = "h-24 rounded-2xl bg-slate-900 border border-slate-700/80 flex flex-col items-center justify-center relative transition-all";
+                    cell.innerHTML = `<span class="text-[10px] text-slate-600 font-mono">srv-0${i + 1}</span>`;
+                }
+            }
+        }
+
+        function stopWhackGame() {
+            whackActive = false;
+            clearInterval(whackTimerInterval);
+            clearTimeout(whackSpawnTimeout);
+            clearWhackGrid();
+        }
+
+        function finishWhackGame() {
+            stopWhackGame();
+            document.getElementById('whack-status-msg').innerHTML = `🎉 Hotfix completato! Hai totalizzato <b class="text-cyan-300">${whackScore} punti</b> e messo in sicurezza i server (+60 CFU)!`;
+            const startBtn = document.getElementById('whack-start-btn');
+            startBtn.innerText = "🔄 Gioca Ancora";
+            startBtn.classList.remove('hidden');
+            completeMinigame('game2');
+        }
+
+        // =========================================================================
+        // MINIGIOCO 3: HACK THE FIREWALL (MEMORY CARD 3D)
+        // =========================================================================
+        const MEMORY_ICONS = [
+            { icon: '🐍', name: 'Python' },
+            { icon: '☕', name: 'Java' },
+            { icon: '🐧', name: 'Linux' },
+            { icon: '🎓', name: 'Laurea' },
+            { icon: '💻', name: 'Git' },
+            { icon: '🍕', name: 'Pizza' }
+        ];
+
+        let memoryDeck = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let memoryMoves = 0;
+        let memoryLock = false;
+
+        function startMemoryGame() {
+            showView('memory-view');
+            matchedPairs = 0;
+            memoryMoves = 0;
+            flippedCards = [];
+            memoryLock = false;
+
+            document.getElementById('memory-moves').innerText = "0";
+            document.getElementById('memory-pairs').innerText = "0";
+            document.getElementById('memory-win-box').classList.add('hidden');
+
+            memoryDeck = [...MEMORY_ICONS, ...MEMORY_ICONS].sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = '';
+
+            memoryDeck.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = "memory-card cursor-pointer";
+                card.dataset.index = index;
+                card.dataset.name = item.name;
+                card.innerHTML = `
+                    <div class="memory-inner">
+                        <div class="memory-front">
+                            <span class="text-lg font-bold opacity-70">&lt;/&gt;</span>
+                        </div>
+                        <div class="memory-back">
+                            <span class="text-2xl">${item.icon}</span>
+                            <span class="text-[10px] text-green-300 font-bold mt-0.5">${item.name}</span>
+                        </div>
+                    </div>
+                `;
+                card.onclick = () => flipMemoryCard(card);
+                grid.appendChild(card);
+            });
+        }
+
+        function flipMemoryCard(card) {
+            if (memoryLock) return;
+            if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                memoryLock = true;
+                memoryMoves++;
+                document.getElementById('memory-moves').innerText = memoryMoves;
+
+                const [c1, c2] = flippedCards;
+                if (c1.dataset.name === c2.dataset.name) {
+                    c1.classList.add('matched');
+                    c2.classList.add('matched');
+                    flippedCards = [];
+                    matchedPairs++;
+                    document.getElementById('memory-pairs').innerText = matchedPairs;
+                    memoryLock = false;
+
+                    if (matchedPairs === MEMORY_ICONS.length) {
+                        document.getElementById('memory-final-moves').innerText = memoryMoves;
+                        document.getElementById('memory-win-box').classList.remove('hidden');
+                        completeMinigame('game3');
+                    }
+                } else {
+                    setTimeout(() => {
+                        c1.classList.remove('flipped');
+                        c2.classList.remove('flipped');
+                        flippedCards = [];
+                        memoryLock = false;
+                    }, 750);
+                }
+            }
+        }
+
+        // =========================================================================
+        // EASTER EGG #1: TERMINALE SEGRETO + COMANDO 'HINT' PER I BUG
+        // =========================================================================
+        function handleTerminalSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('terminal-input');
+            const cmd = input.value.trim();
+            if (!cmd) return;
+            input.value = '';
+            runTerminalCommand(cmd);
+        }
+
+        function runTerminalCommand(rawCmd) {
+            const cmd = rawCmd.toLowerCase().trim();
+            const output = document.getElementById('terminal-output');
+
+            let response = "";
+            if (cmd === 'help') {
+                response = "Comandi: <b class='text-rose-300'>hint</b> (indizi sui 7 bug), <b class='text-amber-300'>segreto</b>, <b class='text-green-300'>caffe</b>, <b class='text-green-300'>rm -rf /ansia</b>, <b class='text-cyan-300'>sudo laurea</b>";
+            } else if (cmd === 'hint') {
+                const unfixedKeys = Object.keys(state.bugsFixed).filter(k => !state.bugsFixed[k]);
+                if (unfixedKeys.length === 0) {
+                    response = "🎉 <span class='text-green-400 font-bold'>Tutti i 7 Bug sono stati riparati! Sei un QA Master!</span>";
+                } else {
+                    const nextBugKey = unfixedKeys[0];
+                    response = `🕵️‍♂️ <span class='text-rose-300 font-bold'>Indizio (${unfixedKeys.length} bug rimasti):</span> ${CONFIG.bugs[nextBugKey].indizio}`;
+                }
+            } else if (cmd === 'caffe') {
+                response = "☕ Erogazione Espresso Doppio a 70°C completata! (+100% Concentrazione)";
+            } else if (cmd === 'rm -rf /ansia') {
+                response = "🗑️ Rimozione cartella /ansia_da_esami... Completata! Spazio libero nel cervello: 100%.";
+            } else if (cmd === 'segreto') {
+                response = `<span class="text-amber-300 font-bold">${CONFIG.easterEggs.terminalSegreto}</span>`;
+                unlockSecret('eggTerminal', 'Segreto #1: Hacker del Terminale');
+            } else if (cmd === 'sudo laurea') {
+                response = "🔓 ACCESSO ROOT CONCESSO! Sblocco immediato dei 180 CFU e apertura Pergamena Ufficiale...";
+                state.cfu = 180;
+                updateHUD();
+                setTimeout(() => openPergamenaModal(), 650);
+            } else {
+                response = `bash: comando '${rawCmd}' non trovato. Usa <b class='text-rose-300'>hint</b> o <b class='text-amber-300'>segreto</b>.`;
+            }
+
+            const entry = document.createElement('div');
+            entry.innerHTML = `<span class="text-green-500">$ ${rawCmd}</span><br><span class="text-slate-200">${response}</span>`;
+            output.appendChild(entry);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // =========================================================================
+        // EASTER EGG #2: OVERCLOCK SEGRETO 105°C
+        // =========================================================================
+        function triggerOverclockEasterEgg() {
+            unlockSecret('eggOverclock', 'Segreto #2: Overclock 105°C');
+            document.getElementById('cpu-modal').classList.remove('hidden');
+            document.getElementById('cpu-modal').classList.add('flex');
+        }
+
+        function closeCpuModal() {
+            document.getElementById('cpu-modal').classList.add('hidden');
+            document.getElementById('cpu-modal').classList.remove('flex');
+        }
+
+        // =========================================================================
+        // EASTER EGG #3: KERNEL PANIC / DEPLOY DI VENERDÌ SERA
+        // =========================================================================
+        function triggerKernelPanic() {
+            const modal = document.getElementById('bsod-modal');
+            const percentEl = document.getElementById('bsod-percent');
+            const revealEl = document.getElementById('bsod-reveal');
+
+            revealEl.classList.add('hidden');
+            percentEl.innerText = "0%";
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            let p = 0;
+            const interval = setInterval(() => {
+                p += 25;
+                percentEl.innerText = `${Math.min(100, p)}%`;
+                if (p >= 100) {
+                    clearInterval(interval);
+                    revealEl.classList.remove('hidden');
+                    unlockSecret('eggBsod', 'Segreto #3: Deploy di Venerdì');
+                }
+            }, 650);
+        }
+
+        function closeBsodModal() {
+            const modal = document.getElementById('bsod-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // =========================================================================
+        // MODALI CHECKLIST BUG, SEGRETI E PERGAMENA FINALE
+        // =========================================================================
+        function openBugModal() {
+            const list = document.getElementById('bugs-checklist');
+            list.innerHTML = '';
+
+            Object.keys(CONFIG.bugs).forEach((key, idx) => {
+                const isFixed = state.bugsFixed[key];
+                const b = CONFIG.bugs[key];
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-xl border ${isFixed ? 'bg-emerald-950/30 border-emerald-500/40 text-white' : 'bg-slate-900/90 border-rose-500/30 text-slate-300'}`;
+                item.innerHTML = `
+                    <div class="flex items-center justify-between font-bold text-xs mb-1">
+                        <span class="${isFixed ? 'text-emerald-400' : 'text-rose-300'}">
+                            ${isFixed ? '✅ ' + b.titolo : `🐛 Bug #${idx + 1} (Da riparare)`}
+                        </span>
+                    </div>
+                    <div class="text-[11px] leading-relaxed ${isFixed ? 'text-slate-200' : 'text-slate-400 italic'}">
+                        ${isFixed ? b.aneddoto : '💡 Indizio: ' + b.indizio}
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+
+            document.getElementById('bugs-modal').classList.remove('hidden');
+            document.getElementById('bugs-modal').classList.add('flex');
+        }
+
+        function closeBugModal() {
+            document.getElementById('bugs-modal').classList.add('hidden');
+            document.getElementById('bugs-modal').classList.remove('flex');
+        }
+
+        function openSecretsModal() {
+            const list = document.getElementById('secrets-list');
+            list.innerHTML = '';
+
+            const items = [
+                { unlocked: state.secretsUnlocked.eggTerminal, icon: '💻', title: 'Easter Egg #1: Terminale Segreto', desc: 'Digita o tocca il pulsante "segreto" nel terminale bash.' },
+                { unlocked: state.secretsUnlocked.eggOverclock, icon: '🔥', title: 'Easter Egg #2: Overclock Boost 105°C', desc: 'Premi il pulsante "OVERCLOCK" nel pannello Hardware CPU.' },
+                { unlocked: state.secretsUnlocked.eggBsod, icon: '⚠️', title: 'Easter Egg #3: Deploy di Venerdì', desc: 'Premi il pulsante rosso proibito in fondo alla pagina.' },
+                { unlocked: state.gamesCompleted.game1, icon: '🧠', title: 'Minigioco 1: Esame Finale (+60 CFU)', desc: 'Completa il quiz sulla triennale e sul neo-dottore.' },
+                { unlocked: state.gamesCompleted.game2, icon: '🐛', title: 'Minigioco 2: Hotfix in Produzione (+60 CFU)', desc: 'Salva i server schiacciando i bug in 22 secondi.' },
+                { unlocked: state.gamesCompleted.game3, icon: '🃏', title: 'Minigioco 3: Hack the Firewall (+60 CFU)', desc: 'Trova tutte le 6 coppie nel Memory Informatico.' }
+            ];
+
+            items.forEach(t => {
+                const el = document.createElement('div');
+                el.className = `p-3 rounded-xl border flex items-center gap-3 ${t.unlocked ? 'bg-slate-900/90 border-amber-400/50 text-white' : 'bg-slate-950/60 border-slate-800 text-slate-500'}`;
+                el.innerHTML = `
+                    <div class="text-2xl">${t.unlocked ? t.icon : '🔒'}</div>
+                    <div>
+                        <div class="font-bold text-xs ${t.unlocked ? 'text-amber-300' : 'text-slate-400'}">${t.title}</div>
+                        <div class="text-[11px]">${t.desc}</div>
+                    </div>
+                `;
+                list.appendChild(el);
+            });
+
+            document.getElementById('secrets-modal').classList.remove('hidden');
+            document.getElementById('secrets-modal').classList.add('flex');
+        }
+
+        function closeSecretsModal() {
+            document.getElementById('secrets-modal').classList.add('hidden');
+            document.getElementById('secrets-modal').classList.remove('flex');
+        }
+
+        function tryOpenPergamena() {
+            const fixedCount = Object.values(state.bugsFixed).filter(Boolean).length;
+            if (state.cfu >= 180 || fixedCount === 7) {
+                openPergamenaModal();
+            } else {
+                showToast("🔒", "Pergamena Bloccata!", `Raggiungi 180 CFU (${state.cfu}/180) o ripara i 7 Bug (${fixedCount}/7)!`);
+            }
+        }
+
+        function openPergamenaModal() {
+            const fixedCount = Object.values(state.bugsFixed).filter(Boolean).length;
+            const rankBadge = document.getElementById('pergamena-badge-rank');
+            if (state.cfu >= 180 && fixedCount === 7) {
+                rankBadge.innerText = "🏆 GRADO MASSIMO: FULL STACK 110L + QA MASTER";
+            } else if (fixedCount === 7) {
+                rankBadge.innerText = "🐛 PROCLAMAZIONE QA MASTER (7/7 BUG FIXATI)";
+            } else {
+                rankBadge.innerText = "🎓 PROCLAMAZIONE UFFICIALE (180/180 CFU)";
+            }
+
+            document.getElementById('pergamena-modal').classList.remove('hidden');
+            document.getElementById('pergamena-modal').classList.add('flex');
+            startConfetti();
+        }
+
+        function closePergamenaModal() {
+            document.getElementById('pergamena-modal').classList.add('hidden');
+            document.getElementById('pergamena-modal').classList.remove('flex');
+            stopConfetti();
+        }
+
+        // =========================================================================
+        // ANIMAZIONE CORIANDOLI (CONFETTI)
+        // =========================================================================
+        const confettiCanvas = document.getElementById('confetti-canvas');
+        const ctx = confettiCanvas.getContext('2d');
+        let confettiAnimId = null;
+        let particles = [];
+
+        function startConfetti() {
+            confettiCanvas.style.display = 'block';
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            particles = [];
+
+            for (let i = 0; i < 130; i++) {
+                particles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    size: Math.random() * 9 + 5,
+                    speedY: Math.random() * 3.5 + 2,
+                    speedX: Math.random() * 2.5 - 1.25,
+                    color: `hsl(${Math.random() * 360}, 95%, 55%)`,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 8 - 4
+                });
+            }
+
+            cancelAnimationFrame(confettiAnimId);
+            loopConfetti();
+        }
+
+        function loopConfetti() {
+            ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            let active = false;
+
+            particles.forEach(p => {
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.rotation += p.rotationSpeed;
+
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                ctx.restore();
+
+                if (p.y < confettiCanvas.height + 20) active = true;
+            });
+
+            if (active) {
+                confettiAnimId = requestAnimationFrame(loopConfetti);
+            } else {
+                confettiCanvas.style.display = 'none';
+            }
+        }
+
+        function stopConfetti() {
+            cancelAnimationFrame(confettiAnimId);
+            confettiCanvas.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
