@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esame di Laurea Finale 🎓💻</title>
+    <!-- Utilizziamo Tailwind CSS per rendere il sito responsive e bello da vedere anche su mobile -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Importiamo un font in stile "codice/terminale" da Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* Stili personalizzati per il tema Hacker/Festivo */
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: #0a0a0a; /* Sfondo quasi nero */
+            color: #00ff00; /* Testo verde terminale */
+            overflow-x: hidden;
+        }
+
+        .terminal-box {
+            background-color: #111;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .btn-answer {
+            background-color: #1a1a1a;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            transition: all 0.2s ease;
+        }
+
+        .btn-answer:hover {
+            background-color: #00ff00;
+            color: #0a0a0a;
+            cursor: pointer;
+        }
+
+        .btn-answer.correct {
+            background-color: #10b981; /* Verde smeraldo */
+            border-color: #10b981;
+            color: white;
+        }
+
+        .btn-answer.wrong {
+            background-color: #ef4444; /* Rosso */
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: #00ff00;
+            color: #0a0a0a;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #00cc00;
+            transform: scale(1.05);
+        }
+
+        /* Canvas per i coriandoli finali */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Ignora i click */
+            z-index: 50;
+            display: none;
+        }
+
+        /* Animazione testo lampeggiante */
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Canvas per Animazione Coriandoli -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Contenitore Principale -->
+    <div class="terminal-box rounded-xl max-w-lg w-full p-6 relative z-10">
+        
+        <!-- Intestazione -->
+        <div class="text-center border-b border-green-800 pb-4 mb-6">
+            <h1 class="text-2xl font-bold mb-2">🎓 root@laurea:~#</h1>
+            <p class="text-sm text-green-600">Sistema di Valutazione del Candidato Dottore</p>
+        </div>
+
+        <!-- SCHERMATA 1: INIZIO (START SCREEN) -->
+        <div id="start-screen" class="text-center block">
+            <h2 class="text-xl mb-4">Inizializzazione Test Finale... <span class="blink">_</span></h2>
+            <p class="mb-8 text-sm text-gray-400">
+                Attenzione: Questo test determinerà se sei veramente degno del titolo di Dottore in Informatica.
+                Rispondi alle domande tecniche e a quelle... meno tecniche.
+            </p>
+            <button onclick="startGame()" class="btn-primary w-full py-4 rounded-lg text-lg">
+                [ ESEGUI_TEST.sh ]
+            </button>
+        </div>
+
+        <!-- SCHERMATA 2: GIOCO (QUIZ) -->
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-4 text-sm">
+                <span id="question-counter">Domanda 1/5</span>
+                <span>Score: <span id="score-display">0</span></span>
+            </div>
+            
+            <div class="mb-6">
+                <h3 id="question-text" class="text-lg font-bold min-h-[60px]">Testo della domanda?</h3>
+            </div>
+
+            <div id="answers-container" class="space-y-3">
+                <!-- I bottoni delle risposte verranno generati qui da JavaScript -->
+            </div>
+        </div>
+
+        <!-- SCHERMATA 3: FINE (END SCREEN) -->
+        <div id="end-screen" class="hidden text-center">
+            <div class="text-6xl mb-4">🎉🎓</div>
+            <h2 class="text-2xl font-bold mb-2 text-white">TEST COMPLETATO</h2>
+            <p class="mb-4">Punteggio finale: <span id="final-score" class="font-bold text-2xl">0</span> / <span id="total-score">0</span></p>
+            <p id="end-message" class="mb-8 text-lg italic text-green-400">
+                <!-- Messaggio personalizzato basato sul punteggio -->
+            </p>
+            <button onclick="restartGame()" class="btn-answer w-full py-3 rounded-lg">
+                > Riavvia_Sistema()
+            </button>
+        </div>
+
+    </div>
+
+    <!-- LOGICA DEL GIOCO IN JAVASCRIPT -->
+    <script>
+        // =========================================================================
+        // ⬇️⬇️⬇️ MODIFICA QUI LE DOMANDE PER IL TUO AMICO! ⬇️⬇️⬇️
+        // =========================================================================
+        // Puoi aggiungere quante domande vuoi. Segui questo schema:
+        // question: "Testo della domanda"
+        // answers: ["Risposta 1", "Risposta 2", "Risposta 3", "Risposta 4"]
+        // correctIndex: L'indice della risposta corretta (0 per la prima, 1 per la seconda, ecc.)
+        
+        const myQuestions = [
+            // Domanda 1 - Informatica Seria
+            {
+                question: "Qual è la complessità temporale nel caso peggiore per l'algoritmo Binary Search?",
+                answers: [
+                    "O(1)", 
+                    "O(n)", 
+                    "O(log n)", 
+                    "O(n^2)"
+                ],
+                correctIndex: 2 // O(log n)
+            },
+            // Domanda 2 - Divertente / Personale (MODIFICA CON I VOSTRI RICORDI)
+            {
+                question: "Quanti caffè ha bevuto prima del tremendo esame di Analisi Matematica?",
+                answers: [
+                    "Nessuno, era tranquillo", 
+                    "Esattamente 3", 
+                    "Ha perso il conto dopo il quinto", 
+                    "Beveva solo Monster Energy"
+                ],
+                correctIndex: 2 // Inserisci qui l'indice corretto
+            },
+            // Domanda 3 - Informatica Seria
+            {
+                question: "In SQL, cosa succede esattamente se esegui 'DROP TABLE studenti;'?",
+                answers: [
+                    "Si cancellano solo i dati ma resta la struttura", 
+                    "Viene eliminata l'intera tabella e i suoi dati in modo irreversibile", 
+                    "Si nasconde la tabella alla vista", 
+                    "Genera un errore di sintassi"
+                ],
+                correctIndex: 1
+            },
+            // Domanda 4 - Divertente / Personale
+            {
+                question: "Qual è il vero linguaggio di programmazione preferito del neo-dottore quando nessuno guarda?",
+                answers: [
+                    "C++ rigorosamente", 
+                    "Python (per fare prima)", 
+                    "HTML (sì, dice che è programmazione)", 
+                    "Scratch (con i blocchi colorati)"
+                ],
+                correctIndex: 3 // Metti l'indice della battuta che preferisci
+            },
+            // Domanda 5 - Informatica/Meme
+            {
+                question: "Come ha risolto il 90% dei bug durante la stesura della tesi?",
+                answers: [
+                    "Leggendo attentamente la documentazione ufficiale", 
+                    "Facendo copia-incolla compulsivo da StackOverflow", 
+                    "Chiedendo disperatamente a ChatGPT", 
+                    "Piangendo davanti allo schermo"
+                ],
+                correctIndex: 2
+            }
+        ];
+        // =========================================================================
+        // ⬆️⬆️⬆️ FINE AREA DI MODIFICA DOMANDE ⬆️⬆️⬆️
+        // =========================================================================
+
+        // Variabili di stato del gioco
+        let currentQuestionIndex = 0;
+        let currentScore = 0;
+        let isAnswering = false;
+
+        // Riferimenti agli elementi del DOM (l'interfaccia)
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const endScreen = document.getElementById('end-screen');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const scoreDisplay = document.getElementById('score-display');
+        const questionCounter = document.getElementById('question-counter');
+        const finalScoreDisplay = document.getElementById('final-score');
+        const totalScoreDisplay = document.getElementById('total-score');
+        const endMessage = document.getElementById('end-message');
+        const confettiCanvas = document.getElementById('confetti-canvas');
+
+        // Funzione per avviare il gioco
+        function startGame() {
+            currentQuestionIndex = 0;
+            currentScore = 0;
+            scoreDisplay.innerText = currentScore;
+            
+            // Nascondi schermo iniziale, mostra schermo quiz
+            startScreen.classList.remove('block');
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            quizScreen.classList.add('block');
+            
+            // Ferma eventuali coriandoli
+            stopConfetti();
+
+            loadQuestion();
+        }
+
+        // Funzione per caricare una domanda
+        function loadQuestion() {
+            isAnswering = false;
+            const currentQ = myQuestions[currentQuestionIndex];
+            
+            // Aggiorna testo e contatore
+            questionText.innerText = `> ${currentQ.question}`;
+            questionCounter.innerText = `Domanda ${currentQuestionIndex + 1}/${myQuestions.length}`;
+            
+            // Svuota le vecchie risposte
+            answersContainer.innerHTML = '';
+            
+            // Crea i bottoni per le risposte
+            currentQ.answers.forEach((answer, index) => {
+                const btn = document.createElement('button');
+                btn.innerText = `[ ${index + 1} ] ${answer}`;
+                btn.className = 'btn-answer w-full py-3 px-4 rounded text-left text-sm font-bold block';
+                // Aggiunge l'evento di click, passando il bottone e il suo indice
+                btn.onclick = () => selectAnswer(btn, index);
+                answersContainer.appendChild(btn);
+            });
+        }
+
+        // Funzione chiamata quando si clicca una risposta
+        function selectAnswer(selectedButton, selectedIndex) {
+            // Se l'utente ha già risposto, ignora i click successivi per evitare bug
+            if (isAnswering) return; 
+            isAnswering = true;
+
+            const currentQ = myQuestions[currentQuestionIndex];
+            const isCorrect = (selectedIndex === currentQ.correctIndex);
+
+            // Colora i bottoni per mostrare la soluzione
+            const allButtons = answersContainer.querySelectorAll('button');
+            
+            if (isCorrect) {
+                selectedButton.classList.add('correct');
+                currentScore++;
+                scoreDisplay.innerText = currentScore;
+            } else {
+                selectedButton.classList.add('wrong');
+                // Evidenzia la risposta corretta in verde
+                allButtons[currentQ.correctIndex].classList.add('correct');
+            }
+
+            // Aspetta 1.5 secondi prima di passare alla prossima domanda
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < myQuestions.length) {
+                    loadQuestion();
+                } else {
+                    showEndScreen();
+                }
+            }, 1500);
+        }
+
+        // Funzione per la schermata finale
+        function showEndScreen() {
+            quizScreen.classList.remove('block');
+            quizScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            endScreen.classList.add('block');
+
+            finalScoreDisplay.innerText = currentScore;
+            totalScoreDisplay.innerText = myQuestions.length;
+
+            // Personalizza il messaggio in base al punteggio
+            let ratio = currentScore / myQuestions.length;
+            if (ratio === 1) {
+                endMessage.innerText = "Punteggio Perfetto! Sei un Hacker Supremo (e i tuoi amici ti conoscono troppo bene). Auguri Dottore! 🎓🏆";
+            } else if (ratio >= 0.5) {
+                endMessage.innerText = "Compilazione avvenuta con successo (con qualche warning). Ottimo lavoro e congratulazioni per la laurea! 🎓💻";
+            } else {
+                endMessage.innerText = "Segmentation Fault! Forse devi studiare di più... oppure i tuoi amici ti hanno fatto domande troppo infami! Auguri Dottore! 🍻";
+            }
+
+            // Avvia la festa!
+            startConfetti();
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        // =========================================================================
+        // CODICE PER L'ANIMAZIONE DEI CORIANDOLI (CONFETTI)
+        // =========================================================================
+        let confettiInterval;
+        let confettiParticles = [];
+        const ctx = confettiCanvas.getContext('2d');
+
+        function startConfetti() {
+            confettiCanvas.style.display = 'block';
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+            confettiParticles = [];
+
+            // Crea le particelle
+            for (let i = 0; i < 150; i++) {
+                confettiParticles.push({
+                    x: Math.random() * confettiCanvas.width,
+                    y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+                    size: Math.random() * 10 + 5,
+                    speedY: Math.random() * 3 + 2,
+                    speedX: Math.random() * 2 - 1,
+                    color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 10 - 5
+                });
+            }
+
+            animateConfetti();
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            
+            let allFallen = true;
+
+            confettiParticles.forEach(p => {
+                // Aggiorna posizione
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.rotation += p.rotationSpeed;
+
+                // Disegna coriandolo
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation * Math.PI / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size);
+                ctx.restore();
+
+                if (p.y < confettiCanvas.height) {
+                    allFallen = false;
+                }
+            });
+
+            if (!allFallen) {
+                confettiInterval = requestAnimationFrame(animateConfetti);
+            }
+        }
+
+        function stopConfetti() {
+            confettiCanvas.style.display = 'none';
+            cancelAnimationFrame(confettiInterval);
+        }
+
+        // Aggiorna la dimensione del canvas se la finestra viene ridimensionata
+        window.addEventListener('resize', () => {
+            if (confettiCanvas.style.display === 'block') {
+                confettiCanvas.width = window.innerWidth;
+                confettiCanvas.height = window.innerHeight;
+            }
+        });
+    </script>
+</body>
+</html>
