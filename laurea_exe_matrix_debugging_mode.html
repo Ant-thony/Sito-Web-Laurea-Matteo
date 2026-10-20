@@ -195,8 +195,8 @@
                 <div id="payload-img-container" class="hidden text-center my-3">
                     <img id="payload-img" 
                          src="" 
-                         onerror="window.loadZulianiSvgFallback && window.loadZulianiSvgFallback(this)" 
-                         alt="Foto Payload - Prof Zuliani" 
+                         onerror="window.handlePayloadImageError && window.handlePayloadImageError(this)" 
+                         alt="Foto Payload" 
                          class="max-w-full max-h-[40vh] mx-auto border border-amber-500/70 rounded object-contain shadow-[0_0_12px_rgba(255,183,0,0.25)]" />
                 </div>
 
@@ -237,7 +237,7 @@
             <!-- Box Foto/GIF Finale Amico -->
             <div class="relative w-full max-w-md mx-auto border-2 border-green-500 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,255,65,0.3)] bg-black">
                 <img src="gif-matteo.gif" 
-                     onerror="this.onerror=null; this.src='screen-x2marco.jpg';" 
+                     onerror="window.handleFinalMediaError && window.handleFinalMediaError(this)" 
                      class="w-full h-auto object-cover max-h-[55vh] mx-auto block" 
                      alt="GIF Dottore in Informatica" />
             </div>
@@ -253,47 +253,79 @@
     </div>
 
     <script>
-        // Fallback grafico per la foto del professore (Dichiarata globalmente in alto nello script)
-        window.loadZulianiSvgFallback = function(imgElement) {
+        // Gestione avanzata dei fallback per le immagini dei payload
+        window.handlePayloadImageError = function(imgElement) {
+            const currentCh = challenges[currentChallengeIndex];
+            const count = parseInt(imgElement.dataset.tryCount || "0", 10);
+            imgElement.dataset.tryCount = (count + 1).toString();
+
+            if (currentCh && currentCh.id === 5) {
+                // Tentativi dinamici per la foto di Matteo Geusa / X2Marco (Domanda 5)
+                if (count === 0) {
+                    imgElement.src = "screen-x2marco.png";
+                    return;
+                } else if (count === 1) {
+                    imgElement.src = "screen-x2marco.jpeg";
+                    return;
+                } else if (count === 2) {
+                    imgElement.src = "Screenshot 2026-10-20 154242.jpg";
+                    return;
+                } else if (count === 3) {
+                    imgElement.src = "matteo.jpg";
+                    return;
+                }
+            } else if (currentCh && currentCh.id === 1) {
+                // Tentativi dinamici per la foto del Prof Zuliani (Domanda 1)
+                if (count === 0) {
+                    imgElement.src = "Gemini_Generated_Image_k6fu22k6fu22k6fu.jpg";
+                    return;
+                } else if (count === 1) {
+                    imgElement.src = "zuliani.jpg";
+                    return;
+                }
+            }
+
+            // Fallback SVG generico se nessuna immagine fisica viene trovata
             imgElement.onerror = null;
-            const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500' width='500' height='500'><rect width='500' height='500' fill='%23060400'/><circle cx='250' cy='170' r='65' fill='%23ffb700' opacity='0.25'/><path d='M200 160 Q250 120 300 160' stroke='%23ffb700' stroke-width='4' fill='none'/><circle cx='225' cy='165' r='5' fill='%23ffb700'/><circle cx='275' cy='165' r='5' fill='%23ffb700'/><path d='M220 200 Q250 180 280 200' stroke='%23ffb700' stroke-width='4' fill='none'/><rect x='210' y='250' width='80' height='120' rx='10' fill='%23100b00' stroke='%23ffb700' stroke-width='2'/><path d='M290 260 L335 295 L340 260' stroke='%23ffb700' stroke-width='10' stroke-linecap='round'/><path d='M335 295 L355 265' stroke='%23ffb700' stroke-width='10' stroke-linecap='round'/><path d='M335 295 L370 280' stroke='%23ffb700' stroke-width='10' stroke-linecap='round'/><path d='M335 295 L380 305' stroke='%23ffffff' stroke-width='16' stroke-linecap='round'/><rect x='360' y='298' width='22' height='14' fill='%23ffffff' stroke='%23ffb700' stroke-width='2'/><text x='250' y='430' text-anchor='middle' fill='%23ffb700' font-family='monospace' font-size='15' font-weight='bold'>PROF ZULIANI - MIGNOLO FASCIATO</text></svg>`;
+            const titleText = currentCh ? currentCh.title : "PAYLOAD";
+            const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500' width='500' height='500'><rect width='500' height='500' fill='%23060400'/><circle cx='250' cy='200' r='80' fill='%23ffb700' opacity='0.2'/><text x='250' y='210' text-anchor='middle' fill='%23ffb700' font-family='monospace' font-size='48'>[ 📷 ]</text><text x='250' y='320' text-anchor='middle' fill='%23ffb700' font-family='monospace' font-size='16' font-weight='bold'>IMMAGINE DECRIPTATA</text><text x='250' y='350' text-anchor='middle' fill='%2300ff41' font-family='monospace' font-size='14'>${titleText}</text></svg>`;
             imgElement.src = "data:image/svg+xml;utf8," + encodeURIComponent(svg);
         };
 
-        const matrixCanvas = document.getElementById('matrixCanvas');
-        const mCtx = matrixCanvas.getContext('2d', { alpha: false });
+        // Nuova funzione intelligente per gestire la GIF o il Video MP4 finale
+        window.handleFinalMediaError = function(mediaElement) {
+            const count = parseInt(mediaElement.dataset.tryCount || "0", 10);
+            mediaElement.dataset.tryCount = (count + 1).toString();
 
-        function resizeMatrixCanvas() {
-            matrixCanvas.width = window.innerWidth;
-            matrixCanvas.height = window.innerHeight;
-        }
-        resizeMatrixCanvas();
-        window.addEventListener('resize', resizeMatrixCanvas);
-
-        const matrixChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*+-/<>~';
-        // Aumentata dimensione font per alleggerire il calcolo
-        const fontSize = 18; 
-        let columns = Math.floor(matrixCanvas.width / fontSize);
-        let drops = Array(columns).fill(1);
-
-        function drawMatrixRain() {
-            // Sfondo nero leggero per creare la scia senza sovraccaricare il compositore GPU
-            mCtx.fillStyle = 'rgba(0, 0, 0, 0.15)';
-            mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
-
-            mCtx.font = fontSize + 'px Fira Code, monospace';
-
-            columns = Math.floor(matrixCanvas.width / fontSize);
-            if (drops.length !== columns) {
-                drops = Array(columns).fill(1);
+            if (count === 0) {
+                // 1° Fallback: Se il file è rimasto un MP4 di WhatsApp, sostituisce l'immagine con un video in loop
+                const video = document.createElement('video');
+                video.src = "gif-matteo.mp4";
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true; // Necessario per l'autoplay sui browser
+                video.playsInline = true;
+                video.className = mediaElement.className;
+                video.dataset.tryCount = "1";
+                
+                video.onerror = function() { 
+                    window.handleFinalMediaError(this); 
+                };
+                
+                mediaElement.parentNode.replaceChild(video, mediaElement);
+            } else if (count === 1) {
+                // 2° Fallback: Se non trova nemmeno l'MP4, usa la foto di backup di X2Marco
+                const img = document.createElement('img');
+                img.src = "screen-x2marco.jpg"; 
+                img.className = mediaElement.className;
+                img.onerror = null;
+                
+                mediaElement.parentNode.replaceChild(img, mediaElement);
             }
+        };
 
-            for (let i = 0; i < drops.length; i++) {
-                if (Math.random() < 0.1) continue;
-
-                const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
-                const x = i * fontSize;
-                const y = drops[i] * fontSize;
+        // Fallback grafico per la foto del professore (Dichiarata globalmente in alto nello script)
+        window.loadZulianiSvgFallback = function(imgElement) {
 
                 if (Math.random() > 0.88) {
                     mCtx.fillStyle = '#b3ffc6';
@@ -320,7 +352,7 @@
                 desc: "Quale era il dito che si è rotto il prof Zuliani?",
                 options: ["pollice", "anulare", "alluce", "mignolo"],
                 correct: 3,
-                image: "zuliani.jpg",
+                image: "Gemini_Generated_Image_k6fu22k6fu22k6fu_2.jpg",
                 payloadQuote: `"Mignolo fasciato ma punteggio pieno! La leggenda del Prof Zuliani rimarrà negli annali della Sapienza." 🖐️🩹`
             },
             {
@@ -471,6 +503,10 @@
             const payloadImg = document.getElementById('payload-img');
 
             if (ch.image) {
+                delete payloadImg.dataset.tryCount;
+                payloadImg.onerror = function() {
+                    window.handlePayloadImageError(this);
+                };
                 payloadImg.src = ch.image;
                 imgContainer.classList.remove('hidden');
             } else {
