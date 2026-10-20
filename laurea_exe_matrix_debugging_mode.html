@@ -34,9 +34,9 @@
             width: 100vw;
             height: 100vh;
             z-index: 0;
-            opacity: 0.75;
+            opacity: 0.65;
             pointer-events: none;
-            filter: drop-shadow(0 0 6px rgba(0, 255, 65, 0.8));
+            /* Rimosso drop-shadow pesante che causava lag di rendering */
         }
 
         .terminal-window {
@@ -196,7 +196,7 @@
                 <div id="payload-img-container" class="hidden text-center my-3">
                     <img id="payload-img" 
                          src="" 
-                         onerror="loadZulianiSvgFallback(this)" 
+                         onerror="window.loadZulianiSvgFallback && window.loadZulianiSvgFallback(this)" 
                          alt="Foto Payload - Prof Zuliani" 
                          class="max-w-full max-h-[40vh] mx-auto border border-amber-500/70 rounded object-contain shadow-[0_0_12px_rgba(255,183,0,0.25)]" />
                 </div>
@@ -227,29 +227,26 @@
         </div>
 
         <!-- SCHERMATA CERTIFICATO E FOTO FINALE -->
-        <div id="final-screen" class="hidden p-2 md:p-6 text-center space-y-8">
+        <div id="final-screen" class="hidden p-2 md:p-6 text-center space-y-6">
             <div class="space-y-3">
                 <h1 class="text-2xl md:text-4xl font-bold text-green-400 tracking-wide text-glow">&gt; SISTEMA COMPROMESSO</h1>
                 <p class="text-lg md:text-xl text-white font-semibold">Privilegi di "Dottore in Informatica" ottenuti.</p>
                 <p class="text-xs md:text-sm text-green-500/80">&gt; Il tuo codice ora compila al primo colpo (nella teoria).</p>
+                <p class="text-xs md:text-sm text-yellow-400 font-semibold animate-pulse pt-2">&gt; Attestato ottenuto con successo in arrivo...</p>
             </div>
 
-            <!-- Box Foto Hover / Tap -->
-            <div class="group relative w-full max-w-xl mx-auto border-2 border-dashed border-green-500 aspect-[3/2] flex flex-col items-center justify-center overflow-hidden cursor-pointer transition-all duration-500 bg-[#020b02] rounded-xl shadow-2xl hover:border-green-400 hover:shadow-[0_0_25px_rgba(0,255,65,0.4)]">
-                
-                <img src="INSERISCI_QUI_URL_FOTO_AMICO" 
-                     onerror="this.onerror=null; this.src='https://placehold.co/800x600/020b02/00FF41?text=CERTIFICATO+VISIVO+DOTTORE';" 
-                     class="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-700 matrix-filter group-hover:filter-none" 
-                     alt="Foto Dottore" />
-        <!-- SCHERMATA CERTIFICATO FINALE -->
-        <div id="final-screen" class="hidden p-6 md:p-12 text-center space-y-6 fade-in">
-            <div class="space-y-4 py-8">
-                <h1 class="text-2xl md:text-4xl font-bold text-green-400 tracking-wide text-glow">&gt; SISTEMA COMPROMESSO</h1>
-                <p class="text-lg md:text-xl text-white font-semibold">Privilegi di "Dottore in Informatica" ottenuti.</p>
-                <p class="text-xs md:text-sm text-green-500/80">&gt; Il tuo codice ora compila al primo colpo (nella teoria).</p>
+            <!-- Box Foto/GIF Finale Amico -->
+            <div class="relative w-full max-w-md mx-auto border-2 border-green-500 rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,255,65,0.3)] bg-black">
+                <img src="dottore_in_informatica.gif" 
+                     onerror="this.onerror=null; this.src='Screenshot 2026-10-20 152631.jpg';" 
+                     class="w-full h-auto object-cover max-h-[55vh] mx-auto block" 
+                     alt="GIF Dottore in Informatica" />
             </div>
 
-            <div class="pt-4">
+            <div class="pt-4 flex flex-col items-center space-y-3">
+                <button onclick="restartProgram()" class="btn-matrix py-2.5 px-6 rounded text-xs md:text-sm font-bold flex items-center space-x-2 border-glow">
+                    <span>[ 🔄 RESTART_PROGRAM.EXE ]</span>
+                </button>
                 <p class="text-xs text-green-700 cursor-pointer hover:text-green-400 transition-colors" onclick="location.reload()">&gt; logout</p>
             </div>
         </div>
@@ -257,8 +254,15 @@
     </div>
 
     <script>
+        // Fallback grafico per la foto del professore (Dichiarata globalmente in alto nello script)
+        window.loadZulianiSvgFallback = function(imgElement) {
+            imgElement.onerror = null;
+            const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500' width='500' height='500'><rect width='500' height='500' fill='%23060400'/><circle cx='250' cy='170' r='65' fill='%23ffb700' opacity='0.25'/><path d='M200 160 Q250 120 300 160' stroke='%23ffb700' stroke-width='4' fill='none'/><circle cx='225' cy='165' r='5' fill='%23ffb700'/><circle cx='275' cy='165' r='5' fill='%23ffb700'/><path d='M220 200 Q250 180 280 200' stroke='%23ffb700' stroke-width='4' fill='none'/><rect x='210' y='250' width='80' height='120' rx='10' fill='%23100b00' stroke='%23ffb700' stroke-width='2'/><path d='M290 260 L335 295 L340 260' stroke='%23ffb700' stroke-width='10' stroke-linecap='round'/><path d='M335 295 L355 265' stroke='%23ffb700' stroke-width='10' stroke-linecap='round'/><path d='M335 295 L370 280' stroke='%23ffb700' stroke-width='10' stroke-linecap='round'/><path d='M335 295 L380 305' stroke='%23ffffff' stroke-width='16' stroke-linecap='round'/><rect x='360' y='298' width='22' height='14' fill='%23ffffff' stroke='%23ffb700' stroke-width='2'/><text x='250' y='430' text-anchor='middle' fill='%23ffb700' font-family='monospace' font-size='15' font-weight='bold'>PROF ZULIANI - MIGNOLO FASCIATO</text></svg>`;
+            imgElement.src = "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+        };
+
         const matrixCanvas = document.getElementById('matrixCanvas');
-        const mCtx = matrixCanvas.getContext('2d');
+        const mCtx = matrixCanvas.getContext('2d', { alpha: false });
 
         function resizeMatrixCanvas() {
             matrixCanvas.width = window.innerWidth;
@@ -268,12 +272,14 @@
         window.addEventListener('resize', resizeMatrixCanvas);
 
         const matrixChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*+-/<>~';
-        const fontSize = 14;
+        // Aumentata dimensione font per alleggerire il calcolo
+        const fontSize = 18; 
         let columns = Math.floor(matrixCanvas.width / fontSize);
         let drops = Array(columns).fill(1);
 
         function drawMatrixRain() {
-            mCtx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+            // Sfondo nero leggero per creare la scia senza sovraccaricare il compositore GPU
+            mCtx.fillStyle = 'rgba(0, 0, 0, 0.15)';
             mCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
 
             mCtx.font = fontSize + 'px Fira Code, monospace';
@@ -284,12 +290,13 @@
             }
 
             for (let i = 0; i < drops.length; i++) {
+                if (Math.random() < 0.1) continue;
+
                 const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
                 const x = i * fontSize;
                 const y = drops[i] * fontSize;
 
-                // Il carattere in testa alla colonna è verde neon brillantissimo/bianco
-                if (Math.random() > 0.85) {
+                if (Math.random() > 0.88) {
                     mCtx.fillStyle = '#b3ffc6';
                 } else {
                     mCtx.fillStyle = '#00ff41';
@@ -303,7 +310,9 @@
                 drops[i]++;
             }
         }
-        setInterval(drawMatrixRain, 30);
+
+        // Ridotto il rate dell'intervallo a 60ms per fluidità ed efficienza
+        setInterval(drawMatrixRain, 60);
 
         const challenges = [
             {
@@ -345,6 +354,15 @@
             },
             {
                 id: 5,
+                title: "Somiglianza Youtuber",
+                desc: "A quale noto youtuber assomiglia Matteo Geusa?",
+                options: ["Gabby16bit", "X2Marco", "Sabaku no Maiku"],
+                correct: 1,
+                image: "Screenshot 2026-10-20 154242.jpg",
+                payloadQuote: `"Oltre che essere un eccellente informatico Matteo è anche uno youtuber di successo!" 🎮📹`
+            },
+            {
+                id: 6,
                 title: "Quesito Teorico di Algebra",
                 desc: "Qual è il determinante di una matrice identità 3x3?",
                 options: ["0", "1", "-1", "Dipende dall'umore del professore"],
@@ -355,6 +373,16 @@
 
         let currentChallengeIndex = 0;
         let isAnswerLocked = false;
+
+        function restartProgram() {
+            currentChallengeIndex = 0;
+            isAnswerLocked = false;
+            document.getElementById('final-screen').classList.add('hidden');
+            document.getElementById('mario-screen').classList.add('hidden');
+            document.getElementById('payload-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('init-screen').classList.remove('hidden');
+        }
 
         function startDebugger() {
             document.getElementById('init-screen').classList.add('hidden');
@@ -472,21 +500,13 @@
             }
         }
 
-        // Fallback grafico per la foto del professore
-        function loadZulianiSvgFallback(imgElement) {
-            imgElement.onerror = null;
-            const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 500' width='500' height='500'><rect width='500' height='500' fill='%23060400'/><circle cx='250' cy='170' r='65' fill='%23ffb700' opacity='0.25'/><path d='M200 160 Q250 120 300 160' stroke='%23ffb700' stroke-width='4' fill='none'/><circle cx='225' cy='165' r='5' fill='%23ffb700'/><circle cx='275' cy='165' r='5' fill='%23ffb700'/><path d='M220 200 Q250 180 280 200' stroke='%23ffb700' stroke-width='4' fill='none'/><rect x='210' y='250' width='80' height='120' rx='10' fill='%23100b00' stroke='%23ffb700' stroke-width='2'/><path d='M290 260 L335 295 L340 260' stroke='%23ffb700' stroke-width='10' stroke-linecap='round'/><path d='M335 295 L355 265' stroke='%23ffb700' stroke-width='10' stroke-linecap='round'/><path d='M335 295 L370 280' stroke='%23ffb700' stroke-width='10' stroke-linecap='round'/><path d='M335 295 L380 305' stroke='%23ffffff' stroke-width='16' stroke-linecap='round'/><rect x='360' y='298' width='22' height='14' fill='%23ffffff' stroke='%23ffb700' stroke-width='2'/><text x='250' y='430' text-anchor='middle' fill='%23ffb700' font-family='monospace' font-size='15' font-weight='bold'>PROF ZULIANI - MIGNOLO FASCIATO</text></svg>`;
-            imgElement.src = "data:image/svg+xml;utf8," + encodeURIComponent(svg);
-        }
-
-        // Palette di colori dell'omino Super Mario originale NES (dalla foto del cliente)
+        // Palette di colori dell'omino Super Mario originale NES
         const MARIO_COLORS = {
-            'R': '#d80000', // Rosso Mario (Cappello e Salopette)
-            'B': '#6b6c00', // Marrone/Oliva NES (Maglia e Capelli)
-            'Y': '#f8b800'  // Giallo/Oro NES (Pelle e Bottoni)
+            'R': '#d80000', // Rosso Mario
+            'B': '#6b6c00', // Marrone/Oliva NES
+            'Y': '#f8b800'  // Giallo/Oro NES
         };
 
-        // Matrice Pixel dell'omino Mario fermo (fedele all'immagine fornita)
         const MARIO_SPRITE_STAND = [
             "   RRRRR    ",
             "  RRRRRRRRR ",
@@ -505,7 +525,6 @@
             "BBBB     BBBB"
         ];
 
-        // Frame di corsa 1
         const MARIO_SPRITE_RUN1 = [
             "   RRRRR    ",
             "  RRRRRRRRR ",
@@ -524,7 +543,6 @@
             "BBBB        "
         ];
 
-        // Frame di corsa 2
         const MARIO_SPRITE_RUN2 = [
             "   RRRRR    ",
             "  RRRRRRRRR ",
@@ -543,7 +561,6 @@
             "        BBBB"
         ];
 
-        // Frame di Salto
         const MARIO_SPRITE_JUMP = [
             "YY Y RRRRR  ",
             "BBB RRRRRRRRR",
@@ -562,7 +579,6 @@
             "  BBBB      "
         ];
 
-        // Funzione per disegnare la matrice pixel del Mario 8-bit originale
         function drawMarioPixelSprite(ctx, x, y, isJumping, legState) {
             let sprite = MARIO_SPRITE_STAND;
             if (isJumping) {
@@ -573,7 +589,7 @@
                 sprite = MARIO_SPRITE_RUN2;
             }
 
-            const pixelSize = 2; // Ogni pixel dello sprite equivale a 2px sulla tela
+            const pixelSize = 2;
             ctx.save();
             for (let r = 0; r < sprite.length; r++) {
                 const row = sprite[r];
@@ -596,32 +612,27 @@
             if (!canvas) return;
             const ctxM = canvas.getContext('2d');
             
-            // Parametri dell'animazione
             let mx = 10;
             let my = 203;
-            let state = 'run_to_block'; // run_to_block -> jump_block -> run_to_flag -> jump_flag -> slide_flag -> walk_castle -> celebrate
+            let state = 'run_to_block';
             
             let velY = 0;
             let legFrame = 0;
             let frameCounter = 0;
 
-            // Blocco ?
             const blockX = 140;
             const blockY = 135;
             let blockHit = false;
             let capY = blockY;
             let capOpacity = 0;
 
-            // Palo e Bandiera
             const poleX = 330;
             const poleY = 50;
             const poleHeight = 180;
             let flagY = poleY + 10;
 
-            // Castello
             const castleX = 375;
 
-            // Particelle fuochi d'artificio
             const fireworks = [];
 
             function createFirework(x, y) {
@@ -641,29 +652,24 @@
             }
 
             function drawScene() {
-                // Sfondo
                 ctxM.fillStyle = "#020b02";
                 ctxM.fillRect(0, 0, 460, 280);
 
-                // Griglia stile Matrix
                 ctxM.strokeStyle = "rgba(0, 255, 65, 0.08)";
                 ctxM.lineWidth = 1;
                 for (let gx = 0; gx < 460; gx += 20) {
                     ctxM.beginPath(); ctxM.moveTo(gx, 0); ctxM.lineTo(gx, 280); ctxM.stroke();
                 }
 
-                // Pavimento
                 ctxM.fillStyle = "#003b00";
                 ctxM.fillRect(0, 233, 460, 47);
                 ctxM.fillStyle = "#00ff41";
                 ctxM.fillRect(0, 233, 460, 3);
 
-                // Nuvole Pixel Matrix
                 ctxM.fillStyle = "rgba(0, 255, 65, 0.25)";
                 ctxM.fillRect(60, 40, 40, 12); ctxM.fillRect(70, 32, 20, 8);
                 ctxM.fillRect(220, 60, 50, 14); ctxM.fillRect(235, 50, 20, 10);
 
-                // Blocco ?
                 ctxM.fillStyle = blockHit ? "#005500" : "#ffb700";
                 ctxM.fillRect(blockX, blockY, 20, 20);
                 ctxM.strokeStyle = "#ffffff";
@@ -673,21 +679,18 @@
                 ctxM.font = "bold 12px monospace";
                 ctxM.fillText(blockHit ? "." : "?", blockX + 6, blockY + 14);
 
-                // Tocco da laureato sbloccato dal Blocco ?
                 if (capOpacity > 0) {
                     ctxM.fillStyle = `rgba(255, 183, 0, ${capOpacity})`;
                     ctxM.font = "16px monospace";
                     ctxM.fillText("🎓 +1000XP", blockX - 15, capY);
                 }
 
-                // Asta e Bandiera Matrix
                 ctxM.fillStyle = "#00ff41";
                 ctxM.fillRect(poleX, poleY, 4, poleHeight); 
                 ctxM.beginPath();
                 ctxM.arc(poleX + 2, poleY - 4, 6, 0, Math.PI * 2);
                 ctxM.fill();
 
-                // Bandiera
                 ctxM.fillStyle = "#00ffff";
                 ctxM.beginPath();
                 ctxM.moveTo(poleX - 35, flagY);
@@ -696,25 +699,21 @@
                 ctxM.closePath();
                 ctxM.fill();
 
-                // Castello
                 ctxM.fillStyle = "#011c01";
                 ctxM.strokeStyle = "#00ff41";
                 ctxM.lineWidth = 2;
                 ctxM.fillRect(castleX, 143, 65, 90);
                 ctxM.strokeRect(castleX, 143, 65, 90);
                 
-                // Torrette castello
                 ctxM.fillRect(castleX + 10, 113, 45, 30);
                 ctxM.strokeRect(castleX + 10, 113, 45, 30);
                 ctxM.fillRect(castleX + 22, 93, 21, 20);
                 ctxM.strokeRect(castleX + 22, 93, 21, 20);
 
-                // Porta Castello
                 ctxM.fillStyle = "#000000";
                 ctxM.fillRect(castleX + 22, 183, 21, 50);
                 ctxM.strokeRect(castleX + 22, 183, 21, 50);
 
-                // Disegna Fuochi d'artificio
                 for (let i = fireworks.length - 1; i >= 0; i--) {
                     const p = fireworks[i];
                     p.x += p.vx;
@@ -731,21 +730,20 @@
 
             function animateLoop() {
                 frameCounter++;
-                if (frameCounter % 6 === 0) {
+                if (frameCounter % 5 === 0) {
                     legFrame = (legFrame % 2) + 1;
                 }
 
-                // Logica degli stati dell'animazione
                 if (state === 'run_to_block') {
-                    mx += 2.2;
+                    mx += 3.2; // Velocizzato movimento Mario
                     if (mx >= blockX - 25) {
                         state = 'jump_block';
-                        velY = -7.5;
+                        velY = -8.0;
                     }
                 } else if (state === 'jump_block') {
-                    mx += 1.2;
+                    mx += 1.8;
                     my += velY;
-                    velY += 0.5;
+                    velY += 0.55;
 
                     if (my <= blockY + 22 && !blockHit) {
                         blockHit = true;
@@ -757,29 +755,29 @@
                         state = 'run_to_flag';
                     }
                 } else if (state === 'run_to_flag') {
-                    mx += 2.4;
+                    mx += 3.5; // Velocizzato movimento Mario
                     if (mx >= poleX - 35) {
                         state = 'jump_flag';
-                        velY = -6;
+                        velY = -6.5;
                     }
                 } else if (state === 'jump_flag') {
-                    mx += 1.5;
+                    mx += 2.0;
                     my += velY;
-                    velY += 0.5;
+                    velY += 0.55;
 
                     if (mx >= poleX - 14) {
                         mx = poleX - 14;
                         state = 'slide_flag';
                     }
                 } else if (state === 'slide_flag') {
-                    if (my < 203) my += 3;
-                    if (flagY < poleY + poleHeight - 20) flagY += 3;
+                    if (my < 203) my += 4;
+                    if (flagY < poleY + poleHeight - 20) flagY += 4;
 
                     if (my >= 203 && flagY >= poleY + poleHeight - 20) {
                         state = 'walk_castle';
                     }
                 } else if (state === 'walk_castle') {
-                    mx += 1.8;
+                    mx += 2.8; // Velocizzato corsa castello
                     if (mx >= castleX + 25) {
                         state = 'celebrate';
                         createFirework(castleX + 32, 90);
@@ -787,16 +785,15 @@
                         createFirework(castleX + 55, 110);
                         document.getElementById('mario-status-text').innerText = "> LAUREA CLEARED! PRIVILEGI OTTENUTI!";
 
-                        // Transizione alla schermata finale esattamente dopo 7 secondi di fuochi d'artificio
+                        // Ridotta durata a 5 secondi (5000ms)
                         setTimeout(() => {
                             state = 'finished';
                             marioScreen.classList.add('hidden');
                             document.getElementById('final-screen').classList.remove('hidden');
-                        }, 7000);
+                        }, 5000);
                     }
                 } else if (state === 'celebrate') {
-                    // Genera fuochi d'artificio continui durante i 7 secondi di celebrazione
-                    if (Math.random() < 0.25) {
+                    if (Math.random() < 0.3) {
                         createFirework(castleX + Math.random() * 60, 60 + Math.random() * 60);
                     }
                 }
@@ -808,7 +805,6 @@
 
                 drawScene();
 
-                // Disegna l'omino NES Super Mario originale se non è entrato del tutto nel castello
                 if (state !== 'celebrate' && state !== 'finished') {
                     drawMarioPixelSprite(ctxM, mx, my, state === 'jump_block' || state === 'jump_flag', legFrame);
                 }
